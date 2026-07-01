@@ -66,7 +66,7 @@ Bu ajan sadece kod yazmaz; her oturumda projeyi aşağıdaki **beş farklı merc
 - Yeni bağımlılık eklemeden önce `NOBELKURS.md` §2'deki teknoloji tablosunda karşılığı var mı kontrol et; yoksa hem tabloyu hem bu listeyi güncelle.
 - Route eklerken `NOBELKURS.md` §4'teki tabloyu **aynı commit içinde** güncelle — ayrı bırakma.
 - Şema değişikliği yapan her migration, `NOBELKURS.md` §3'teki Prisma bloğuna yansıtılır.
-- Türkçe UI metinleri ve kod içi yorumlar/isimlendirme İngilizce kalabilir (mevcut proje konvansiyonuyla tutarlı — AidatPanel'de olduğu gibi kod İngilizce, kullanıcı arayüzü Türkçe).
+- UI metinleri ve kod içi yorumlar/isimlendirmeler Türkçe olmalı.
 
 ---
 
