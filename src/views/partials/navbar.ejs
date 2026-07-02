@@ -1,0 +1,31 @@
+<header class="navbar">
+  <div class="navbar__inner">
+    <a href="/" class="navbar__brand">
+      <span class="navbar__logo" aria-hidden="true">NK</span>
+      <span><%= appName %></span>
+    </a>
+    <nav class="navbar__nav" aria-label="Ana menü">
+      <a href="/" class="navbar__link<%= activeNav === 'program' ? ' navbar__link--active' : '' %>">Program</a>
+      <a href="/teachers" class="navbar__link<%= activeNav === 'teachers' ? ' navbar__link--active' : '' %>">Öğretmenler</a>
+      <a href="/students" class="navbar__link<%= activeNav === 'students' ? ' navbar__link--active' : '' %>">Öğrenciler</a>
+    </nav>
+    <div class="navbar__actions">
+      <div class="pdf-menu" id="pdf-menu">
+        <button
+          type="button"
+          class="btn btn--secondary pdf-menu__toggle"
+          data-action="toggle-pdf-menu"
+          aria-expanded="false"
+          aria-haspopup="true"
+        >
+          PDF ▾
+        </button>
+        <div class="pdf-menu__panel" role="menu">
+          <a href="/pdf/students/all" class="pdf-menu__item" role="menuitem" data-pdf-url="/pdf/students/all">Tüm Öğrenciler</a>
+          <a href="/pdf/teachers/all" class="pdf-menu__item" role="menuitem" data-pdf-url="/pdf/teachers/all">Tüm Öğretmenler</a>
+        </div>
+      </div>
+      <%- include('theme-toggle') %>
+    </div>
+  </div>
+</header>

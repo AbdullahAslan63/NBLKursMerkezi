@@ -1,0 +1,48 @@
+/* §11 — renk, tipografi, spacing token'ları */
+
+:root,
+[data-theme="light"] {
+  --color-primary: #1e3a5f;
+  --color-primary-hover: #152a45;
+  --color-accent: #c9a227;
+  --color-accent-muted: rgba(201, 162, 39, 0.15);
+  --color-bg: #f8f9fb;
+  --color-surface: #ffffff;
+  --color-text: #1a1a2e;
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-success: #059669;
+  --color-danger: #dc2626;
+  --color-today-bg: rgba(30, 58, 95, 0.06);
+
+  --font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+}
+
+[data-theme="dark"] {
+  --color-primary: #5b8fd4;
+  --color-primary-hover: #7aa8e0;
+  --color-accent: #d4b84a;
+  --color-accent-muted: rgba(212, 184, 74, 0.15);
+  --color-bg: #0f1419;
+  --color-surface: #1a2332;
+  --color-text: #e8eaed;
+  --color-text-muted: #9ca3af;
+  --color-border: #2d3748;
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  --color-today-bg: rgba(91, 143, 212, 0.12);
+}

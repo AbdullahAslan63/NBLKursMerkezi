@@ -1,12 +1,12 @@
 # NOBELKURS
 
-Nobel Kurs Merkezi için web tabanlı etüt planlama ve takip sistemi. Kurs müdürü haftalık etüt programını (gün × saat) tek ekrandan yönetir; öğretmen ve öğrenci ataması yapar; toplu/tekil PDF raporları üretir.
+Nobel Kurs Merkezi için web tabanlı etüt planlama ve takip sistemi. Kurs müdürü haftalık etüt programını (gün × saat) tek ekrandan yönetir; öğretmen ve öğrenci ataması yapar; toplu/tekil PDF raporları üretir. Kurumsal, modern arayüz hedeflenir (bkz. NOBELKURS §11).
 
 **Kullanıcı profili:** Tek kullanıcı — Nobel Kurs Merkezi Müdürü.
 
 ## Proje Durumu
 
-Kod tabanı henüz oluşturulmadı; repo şu an dokümantasyon aşamasında. Tüm geliştirme fazları (Faz 0–7) **Planlandı** durumunda. Ayrıntılı faz tablosu ve açık kararlar için [`NOBELKURS.md`](./NOBELKURS.md) dosyasına bakın.
+**Faz 6 tamamlandı** — 4 PDF varyantı, navbar menüsü ve Puppeteer kuyruğu hazır. Aktif geliştirme: **Faz 7** (admin login). Ayrıntılı faz tablosu için [`NOBELKURS.md`](./NOBELKURS.md) dosyasına bakın.
 
 ## Teknolojiler
 
@@ -16,10 +16,12 @@ Kod tabanı henüz oluşturulmadı; repo şu an dokümantasyon aşamasında. Tü
 | ORM | Prisma | |
 | Veritabanı | PostgreSQL | |
 | Template | EJS | Sayfa iskeleti + AJAX ile çekilen partial'lar |
-| İstemci etkileşimi | Vanilla JS (fetch) + Alpine.js (opsiyonel) | Build tooling yok |
-| Excel içe aktarma | exceljs | MEB e-Okul formatı |
-| PDF üretimi | Puppeteer (HTML→PDF) | Aynı EJS şablonları PDF için de kullanılır |
-| Dosya yükleme | multer | Excel upload için |
+| İstemci etkileşimi | Vanilla JS (fetch) | Build tooling yok |
+| Oturum | express-session + bcrypt | Tek kullanıcı, Faz 7 |
+| Excel içe aktarma | xlsx (SheetJS) | MEBBIS IOG02005 `.xls` formatı |
+| PDF üretimi | Puppeteer (HTML→PDF) | Eşzamanlı tek iş |
+| Dosya yükleme | multer | Excel upload |
+| Test | Node.js `node:test` + supertest | bkz. NOBELKURS §13 |
 
 ## Gereksinimler
 
@@ -28,8 +30,6 @@ Kod tabanı henüz oluşturulmadı; repo şu an dokümantasyon aşamasında. Tü
 - npm
 
 ## Kurulum
-
-> Faz 0 (repo kurulumu) tamamlandığında aşağıdaki adımlar geçerli olacaktır.
 
 ```bash
 git clone <repo-url>
@@ -60,9 +60,20 @@ npx prisma generate
 ```bash
 npm run dev     # geliştirme (nodemon)
 npm start       # prodüksiyon
+npm test        # unit + integration testleri
 ```
 
 Uygulama varsayılan olarak `http://localhost:3000` üzerinde çalışır.
+
+### PDF (Faz 6)
+
+`npm install` sırasında Puppeteer Chrome indirilir. PDF üretimi çalışmıyorsa:
+
+```bash
+node node_modules/puppeteer/install.mjs
+```
+
+Alternatif olarak `.env` içinde `PUPPETEER_EXECUTABLE_PATH` ile sistem Chrome yolunu belirtin.
 
 ## Proje Yapısı
 
@@ -70,14 +81,20 @@ Hedef klasör düzeni ([`NOBELKURS.md` §5](./NOBELKURS.md)):
 
 ```
 src/
-  routes/        teachers.js, students.js, sessions.js, pdf.js
+  routes/        index.js, teachers.js, students.js, classes.js, sessions.js, pdf.js, auth.js
   views/
-    partials/    session-panel.ejs, session-form.ejs, table-cell.ejs
-    pages/       index.ejs, teachers.ejs, students.ejs
+    partials/    session-panel.ejs, session-form.ejs, table-cell.ejs, theme-toggle.ejs, navbar.ejs, footer.ejs
+    pages/       index.ejs, teachers.ejs, students.ejs, login.ejs, not-found.ejs
     pdf/         student-schedule.ejs, teacher-schedule.ejs
   services/      excelImport.js, pdfGenerator.js
+  middleware/    auth.js, errorHandler.js, validate.js
+  lib/           apiResponse.js, prisma.js, renderPage.js
   prisma/        schema.prisma ve migration'lar
-  config/        schedule.js (gün/saat sabitleri)
+  config/        schedule.js
+  public/
+    css/         tokens.css, base.css, components.css, pages.css
+    js/          theme.js, ui.js
+tests/           unit/, integration/, fixtures/, helpers/
 ```
 
 ## Dokümantasyon
@@ -86,7 +103,7 @@ src/
 
 | Dosya | Rol |
 |---|---|
-| [`NOBELKURS.md`](./NOBELKURS.md) | **Tek doğruluk kaynağı:** veritabanı şeması, route tablosu, klasör yapısı, geliştirme fazları, açık kararlar |
+| [`NOBELKURS.md`](./NOBELKURS.md) | **Tek doğruluk kaynağı:** şema, route, fazlar, §12 API sözleşmesi, §13 test stratejisi |
 | [`AGENTS.md`](./AGENTS.md) | AI ajanları (Cursor vb.) için değerlendirme protokolü, faz kontrol noktaları, risk listesi ve `NOBELKURS.md` ile senkronizasyon kuralları |
 | `README.md` | Repoya giriş noktası; kurulum ve genel özet |
 
@@ -94,9 +111,7 @@ src/
 
 ### Bilinen açık konular
 
-- Excel kolon mapping'i henüz netleşmedi (bkz. NOBELKURS §8).
-- Öğretmen silme davranışı (cascade mi, engelleme mi) karara bağlanmadı.
-- Aynı öğrencinin çakışan saatlerde birden fazla etüde atanması henüz engellenmiyor.
+v1 iş kuralları ve deploy kararları netleşti (bkz. NOBELKURS §8). Ertelenmiş: öğrenci katılım oranı / yoklama (§9).
 
 ## Geliştirme Notları
 

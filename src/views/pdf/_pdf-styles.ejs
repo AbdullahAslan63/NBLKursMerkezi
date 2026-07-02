@@ -1,0 +1,105 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+    font-size: 10pt;
+    color: #1a1a2e;
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .pdf-page {
+    page-break-after: always;
+  }
+
+  .pdf-page:last-child {
+    page-break-after: auto;
+  }
+
+  .pdf-header {
+    border-bottom: 2px solid #1e3a5f;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+
+  .pdf-header__brand {
+    font-size: 9pt;
+    font-weight: 600;
+    color: #1e3a5f;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .pdf-header__title {
+    font-size: 16pt;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-top: 4px;
+  }
+
+  .pdf-header__meta {
+    font-size: 9pt;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  .pdf-footer {
+    margin-top: 12px;
+    font-size: 8pt;
+    color: #9ca3af;
+    text-align: right;
+  }
+
+  .pdf-empty {
+    padding: 24px;
+    text-align: center;
+    color: #6b7280;
+    border: 1px dashed #e5e7eb;
+    border-radius: 8px;
+  }
+
+  .pdf-grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 7.5pt;
+  }
+
+  .pdf-grid th,
+  .pdf-grid td {
+    border: 1px solid #e5e7eb;
+    padding: 4px 3px;
+    text-align: center;
+    vertical-align: middle;
+    word-break: break-word;
+  }
+
+  .pdf-grid thead th {
+    background: #1e3a5f;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 7pt;
+  }
+
+  .pdf-grid__time {
+    background: #f8f9fb;
+    font-weight: 600;
+    color: #1e3a5f;
+    width: 68px;
+    font-size: 7pt;
+  }
+
+  .pdf-grid__cell--filled {
+    background: rgba(30, 58, 95, 0.06);
+    color: #1a1a2e;
+    font-weight: 500;
+  }
+
+  .pdf-grid__cell--empty {
+    color: #d1d5db;
+  }
+</style>

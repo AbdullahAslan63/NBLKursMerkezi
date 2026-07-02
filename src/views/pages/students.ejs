@@ -1,0 +1,126 @@
+<div class="page-header page-toolbar">
+  <div>
+    <h1>Öğrenciler</h1>
+    <p>MEBBIS IOG02005 listesini içe aktarın veya manuel ekleyin</p>
+  </div>
+  <div class="page-toolbar__actions">
+    <button type="button" class="btn btn--secondary" id="btn-import-students">Excel'den İçe Aktar</button>
+    <button type="button" class="btn btn--primary" id="btn-add-student">Öğrenci Ekle</button>
+  </div>
+</div>
+
+<div class="search-box page-search">
+  <input type="search" id="student-search" placeholder="Ad, numara veya sınıf ara..." aria-label="Öğrenci ara">
+</div>
+
+<div id="students-empty" class="empty-state card" style="<%= students.length ? 'display:none' : '' %>">
+  <h2>Henüz öğrenci yok</h2>
+  <p>Manuel ekleyin veya önce bir sınıf oluşturup öğrenci kaydı yapın.</p>
+  <button type="button" class="btn btn--primary" data-action="add-student">Öğrenci Ekle</button>
+</div>
+
+<div id="students-table-wrap" style="<%= students.length ? '' : 'display:none' %>">
+  <table class="data-table" id="students-table">
+    <thead>
+      <tr>
+        <th>Öğrenci</th>
+        <th>Sınıf</th>
+        <th class="col-actions">İşlem</th>
+      </tr>
+    </thead>
+    <tbody id="students-tbody">
+      <% students.forEach(function(s) { %>
+        <tr
+          data-id="<%= s.id %>"
+          data-number="<%= s.studentNumber %>"
+          data-first="<%= s.firstName %>"
+          data-last="<%= s.lastName %>"
+          data-class-id="<%= s.classId %>"
+          data-class-name="<%= s.className %>"
+          data-search="<%= (s.firstName + ' ' + s.lastName + ' ' + s.studentNumber + ' ' + s.className).toLowerCase() %>"
+        >
+          <td>
+            <div class="student-cell">
+              <span class="student-cell__name"><%= s.firstName %> <%= s.lastName %></span>
+              <span class="student-cell__number"><%= s.studentNumber %></span>
+            </div>
+          </td>
+          <td><span class="badge"><%= s.className %></span></td>
+          <td class="col-actions">
+            <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/students/<%= s.id %>" aria-label="PDF indir" title="PDF indir">⬇</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="edit" aria-label="Düzenle" title="Düzenle">✎</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="delete" aria-label="Sil" title="Sil">✕</button>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<dialog id="student-modal" class="form-modal">
+  <form id="student-form" method="dialog">
+    <h2 id="student-modal-title">Öğrenci Ekle</h2>
+    <div class="form-field">
+      <label for="student-number">Öğrenci No</label>
+      <input type="text" id="student-number" name="studentNumber" required inputmode="numeric" autocomplete="off">
+    </div>
+    <div class="form-field">
+      <label for="student-first">Ad</label>
+      <input type="text" id="student-first" name="firstName" required autocomplete="off">
+    </div>
+    <div class="form-field">
+      <label for="student-last">Soyad</label>
+      <input type="text" id="student-last" name="lastName" required autocomplete="off">
+    </div>
+    <div class="form-field">
+      <label for="student-class-select">Sınıf</label>
+      <select id="student-class-select" name="classId">
+        <option value="">Sınıf seçin...</option>
+      </select>
+      <p class="form-field__hint">Listede yoksa yeni sınıf adı girin:</p>
+      <input type="text" id="student-class-new" placeholder="örn. 12-A" autocomplete="off">
+    </div>
+    <p class="form-field__error" id="student-form-error" hidden></p>
+    <div class="form-modal__actions">
+      <button type="button" class="btn btn--secondary" data-action="cancel">İptal</button>
+      <button type="submit" class="btn btn--primary">Kaydet</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="import-modal" class="form-modal">
+  <form id="import-form" method="dialog">
+    <h2>Excel'den İçe Aktar</h2>
+    <p class="form-field__hint">MEBBIS IOG02005 — Şube Listesi (Öğrenci No Sıralı)</p>
+
+    <div class="form-field">
+      <label for="import-class-select">Hedef Sınıf</label>
+      <select id="import-class-select" name="classId">
+        <option value="">Sınıf seçin...</option>
+      </select>
+      <p class="form-field__hint">Listede yoksa yeni sınıf adı girin:</p>
+      <input type="text" id="import-class-new" placeholder="örn. 12-A" autocomplete="off">
+    </div>
+
+    <div class="form-field">
+      <span class="form-field__label">Excel Dosyası</span>
+      <div class="file-drop" id="file-drop">
+        <input type="file" id="import-file" name="file" accept=".xls,.xlsx" hidden>
+        <p class="file-drop__text">MEBBIS listesini buraya bırakın</p>
+        <p class="file-drop__hint">veya dosya seçin (.xls, .xlsx)</p>
+        <button type="button" class="btn btn--secondary" id="btn-pick-file">Dosya Seç</button>
+        <p class="file-drop__name" id="import-file-name" hidden></p>
+      </div>
+    </div>
+
+    <div id="import-result" class="import-result" hidden></div>
+    <p class="form-field__error" id="import-form-error" hidden></p>
+
+    <div class="form-modal__actions">
+      <button type="button" class="btn btn--secondary" data-action="cancel-import">İptal</button>
+      <button type="submit" class="btn btn--primary" id="btn-do-import">İçe Aktar</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="/js/students.js"></script>

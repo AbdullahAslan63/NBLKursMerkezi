@@ -1,0 +1,91 @@
+<div
+  class="session-modal"
+  data-day="<%= dayOfWeek %>"
+  data-start="<%= startTime %>"
+  data-end="<%= endTime %>"
+>
+  <h2 class="session-modal__title"><%= dayLabel %> · <%= timeLabel %></h2>
+
+  <section class="session-modal__section" aria-label="Mevcut etütler">
+    <h3 class="session-modal__subtitle">Mevcut Etütler</h3>
+    <% if (!sessions || sessions.length === 0) { %>
+      <p class="session-modal__empty">Bu saatte henüz etüt yok.</p>
+    <% } else { %>
+      <ul class="session-list">
+        <% sessions.forEach(function(session) { %>
+          <li
+            class="session-list__item"
+            data-session-id="<%= session.id %>"
+            data-teacher-id="<%= session.teacherId %>"
+            data-student-ids="<%= session.studentIds.join(',') %>"
+          >
+            <span><%= session.teacherName %> — <%= session.studentCount %> öğrenci</span>
+            <span class="session-list__actions">
+              <button
+                type="button"
+                class="btn btn--secondary btn--icon"
+                data-action="edit-session"
+                aria-label="Düzenle"
+                title="Düzenle"
+              >✎</button>
+              <button
+                type="button"
+                class="btn btn--secondary btn--icon"
+                data-action="delete-session"
+                data-session-id="<%= session.id %>"
+                aria-label="Sil"
+                title="Sil"
+              >✕</button>
+            </span>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+
+  <section class="session-modal__section" aria-label="Etüt formu">
+    <h3 class="session-modal__subtitle" id="session-form-title">Yeni Etüt Ekle</h3>
+
+    <% if (!teachers || teachers.length === 0) { %>
+      <p class="session-modal__empty">Önce <a href="/teachers">öğretmen</a> ekleyin.</p>
+    <% } else if (!students || students.length === 0) { %>
+      <p class="session-modal__empty">Önce <a href="/students">öğrenci</a> ekleyin.</p>
+    <% } else { %>
+      <form id="session-form" class="session-form">
+        <div class="form-field">
+          <span class="form-field__label">Öğretmen</span>
+          <div class="choice-grid" role="radiogroup" aria-label="Öğretmen seçimi">
+            <% teachers.forEach(function(teacher) { %>
+              <label class="choice-card">
+                <input type="radio" name="teacherId" value="<%= teacher.id %>">
+                <span><%= teacher.name %></span>
+              </label>
+            <% }); %>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <span class="form-field__label">Öğrenciler</span>
+          <div class="choice-list" role="group" aria-label="Öğrenci seçimi">
+            <% students.forEach(function(student) { %>
+              <label class="choice-row">
+                <input type="checkbox" name="studentIds" value="<%= student.id %>">
+                <span class="choice-row__text">
+                  <span class="choice-row__main"><%= student.label %></span>
+                  <span class="choice-row__sub"><%= student.sublabel %></span>
+                </span>
+              </label>
+            <% }); %>
+          </div>
+        </div>
+
+        <p class="form-field__error" id="session-form-error" hidden></p>
+
+        <div class="form-modal__actions">
+          <button type="button" class="btn btn--secondary" id="session-form-cancel-edit" hidden>İptal</button>
+          <button type="submit" class="btn btn--primary" id="session-form-submit">Etüt Kaydet</button>
+        </div>
+      </form>
+    <% } %>
+  </section>
+</div>

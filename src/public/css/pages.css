@@ -1,0 +1,428 @@
+/* Sayfa özel stilleri */
+
+/* Program ızgarası — Faz 3 vitrin */
+.schedule-grid-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  background: var(--color-surface);
+}
+
+.schedule-grid {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.schedule-grid th,
+.schedule-grid td {
+  border: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.schedule-grid thead th {
+  padding: var(--space-3) var(--space-2);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: center;
+  background: var(--color-bg);
+  color: var(--color-primary);
+}
+
+.schedule-grid thead th.schedule-grid__today {
+  background: var(--color-today-bg);
+  box-shadow: inset 0 -3px 0 var(--color-accent);
+}
+
+.schedule-grid__time-col {
+  width: 110px;
+  padding: var(--space-3) var(--space-3);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.schedule-cell {
+  height: 56px;
+  padding: var(--space-2);
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+}
+
+.schedule-cell:hover {
+  background: var(--color-bg);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.schedule-cell--today {
+  background: var(--color-today-bg);
+}
+
+.schedule-cell--filled {
+  background: var(--color-surface);
+}
+
+.schedule-cell--filled::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  width: 3px;
+  background: var(--color-accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.schedule-cell--filled:hover {
+  background: var(--color-accent-muted);
+}
+
+.schedule-cell__badge {
+  display: inline-block;
+}
+
+.schedule-cell__empty-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.schedule-cell:hover .schedule-cell__empty-hint {
+  opacity: 1;
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.page-toolbar h1 {
+  margin: 0 0 var(--space-1);
+}
+
+.page-toolbar p {
+  margin: 0;
+}
+
+.page-toolbar__actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.page-search {
+  margin-bottom: var(--space-4);
+}
+
+.col-actions {
+  width: 100px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.student-cell__name {
+  display: block;
+  font-weight: 500;
+}
+
+.student-cell__number {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.form-field__hint {
+  margin: var(--space-2) 0 var(--space-1);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.form-field__error {
+  margin: var(--space-1) 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-danger);
+}
+
+.form-field input.is-invalid,
+.form-field select.is-invalid {
+  border-color: var(--color-danger);
+}
+
+.form-modal {
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0;
+  max-width: 480px;
+  width: calc(100% - var(--space-6));
+  box-shadow: var(--shadow-md);
+}
+
+.form-modal::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.form-modal form {
+  padding: var(--space-5);
+}
+
+.form-modal h2 {
+  margin: 0 0 var(--space-4);
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+
+.form-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.coming-soon-banner {
+  background: var(--color-accent-muted);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+/* Etüt modalı */
+.schedule-modal-dialog {
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0;
+  max-width: 640px;
+  width: calc(100% - var(--space-6));
+  box-shadow: var(--shadow-md);
+}
+
+.schedule-modal-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.schedule-modal-dialog__header {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-3) var(--space-3) 0;
+}
+
+.schedule-modal-dialog__body {
+  padding: 0 var(--space-5) var(--space-5);
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.session-modal__title {
+  margin: 0 0 var(--space-4);
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+
+.session-modal__subtitle {
+  margin: 0 0 var(--space-3);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.session-modal__section + .session-modal__section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.session-modal__empty,
+.session-modal__loading {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+.session-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.session-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+
+.session-list__actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.schedule-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.schedule-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.schedule-legend__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.schedule-legend__dot--filled {
+  border-color: var(--color-accent);
+  background: var(--color-accent-muted);
+}
+
+.schedule-legend__dot--today {
+  border-color: var(--color-primary);
+  background: var(--color-today-bg);
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-2);
+}
+
+.choice-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.choice-card:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-today-bg);
+}
+
+.choice-card input {
+  accent-color: var(--color-primary);
+}
+
+.choice-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.choice-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.choice-row:last-child {
+  border-bottom: none;
+}
+
+.choice-row:hover {
+  background: var(--color-bg);
+}
+
+.choice-row input {
+  margin-top: 3px;
+  accent-color: var(--color-primary);
+}
+
+.choice-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.choice-row__main {
+  font-weight: 500;
+}
+
+.choice-row__sub {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.form-field__label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* Dosya yükleme alanı */
+.file-drop {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  text-align: center;
+  background: var(--color-bg);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.file-drop--active {
+  border-color: var(--color-primary);
+  background: var(--color-today-bg);
+}
+
+.file-drop__text {
+  margin: 0 0 var(--space-1);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.file-drop__hint {
+  margin: 0 0 var(--space-3);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.file-drop__name {
+  margin: var(--space-3) 0 0;
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.import-result {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-muted);
+  font-size: 0.875rem;
+}

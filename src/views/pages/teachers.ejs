@@ -1,0 +1,59 @@
+<div class="page-header page-toolbar">
+  <div>
+    <h1>Öğretmenler</h1>
+    <p>Etüt programına atanacak öğretmenleri yönetin</p>
+  </div>
+  <button type="button" class="btn btn--primary" id="btn-add-teacher">Öğretmen Ekle</button>
+</div>
+
+<div class="search-box page-search">
+  <input type="search" id="teacher-search" placeholder="Öğretmen ara..." aria-label="Öğretmen ara">
+</div>
+
+<div id="teachers-empty" class="empty-state card" style="<%= teachers.length ? 'display:none' : '' %>">
+  <h2>Henüz öğretmen yok</h2>
+  <p>İlk öğretmeninizi ekleyerek etüt programını oluşturmaya başlayın.</p>
+  <button type="button" class="btn btn--primary" data-action="add-teacher">Öğretmen Ekle</button>
+</div>
+
+<div id="teachers-table-wrap" style="<%= teachers.length ? '' : 'display:none' %>">
+  <table class="data-table" id="teachers-table">
+    <thead>
+      <tr>
+        <th>Ad</th>
+        <th>Etüt</th>
+        <th class="col-actions">İşlem</th>
+      </tr>
+    </thead>
+    <tbody id="teachers-tbody">
+      <% teachers.forEach(function(t) { %>
+        <tr data-id="<%= t.id %>" data-name="<%= t.name %>" data-search="<%= t.name.toLowerCase() %>">
+          <td><%= t.name %></td>
+          <td><span class="badge"><%= t.sessionCount %> etüt</span></td>
+          <td class="col-actions">
+            <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/teachers/<%= t.id %>" aria-label="PDF indir" title="PDF indir">⬇</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="edit" aria-label="Düzenle" title="Düzenle">✎</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="delete" aria-label="Sil" title="Sil">✕</button>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<dialog id="teacher-modal" class="form-modal">
+  <form id="teacher-form" method="dialog">
+    <h2 id="teacher-modal-title">Öğretmen Ekle</h2>
+    <div class="form-field">
+      <label for="teacher-name">Ad Soyad</label>
+      <input type="text" id="teacher-name" name="name" required autocomplete="off">
+      <p class="form-field__error" id="teacher-name-error" hidden></p>
+    </div>
+    <div class="form-modal__actions">
+      <button type="button" class="btn btn--secondary" data-action="cancel">İptal</button>
+      <button type="submit" class="btn btn--primary">Kaydet</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="/js/teachers.js"></script>

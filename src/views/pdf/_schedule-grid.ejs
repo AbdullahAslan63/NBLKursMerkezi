@@ -1,0 +1,26 @@
+<table class="pdf-grid" aria-label="Haftalık etüt programı">
+  <thead>
+    <tr>
+      <th class="pdf-grid__time" scope="col">Saat</th>
+      <% days.forEach(function(day) { %>
+        <th scope="col"><%= day.short %></th>
+      <% }); %>
+    </tr>
+  </thead>
+  <tbody>
+    <% timeSlots.forEach(function(slot) { %>
+      <tr>
+        <th class="pdf-grid__time" scope="row"><%= slot.label %></th>
+        <% days.forEach(function(day) { %>
+          <%
+            const cellKey = day.key + ':' + slot.startTime + ':' + slot.endTime;
+            const content = cellMap[cellKey];
+            const filled = content && (Array.isArray(content) ? content.length : String(content).length);
+            const text = Array.isArray(content) ? content.join(', ') : (content || '—');
+          %>
+          <td class="<%= filled ? 'pdf-grid__cell--filled' : 'pdf-grid__cell--empty' %>"><%= text %></td>
+        <% }); %>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>

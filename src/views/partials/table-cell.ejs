@@ -1,0 +1,24 @@
+<%
+  const count = typeof sessionCount !== 'undefined' ? sessionCount : 0;
+  const isFilled = count > 0;
+  const isToday = typeof isTodayColumn !== 'undefined' && isTodayColumn;
+  const cellClasses = [
+    'schedule-cell',
+    isToday ? 'schedule-cell--today' : '',
+    isFilled ? 'schedule-cell--filled' : '',
+  ].filter(Boolean).join(' ');
+%>
+<td
+  class="<%= cellClasses %>"
+  data-day="<%= dayKey %>"
+  data-start="<%= startTime %>"
+  data-end="<%= endTime %>"
+  data-session-count="<%= count %>"
+  title="<%= isFilled ? count + ' etüt' : 'Etüt ekle' %>"
+>
+  <% if (isFilled) { %>
+    <span class="badge badge--filled schedule-cell__badge"><%= count %> öğrt.</span>
+  <% } else { %>
+    <span class="schedule-cell__empty-hint">Tıkla ve ekle</span>
+  <% } %>
+</td>

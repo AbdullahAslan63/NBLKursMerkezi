@@ -1,0 +1,39 @@
+{
+  "name": "nobelkurs",
+  "version": "1.0.0",
+  "description": "Nobel Kurs Merkezi etüt yönetim sistemi",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test --test-concurrency=1 tests/**/*.test.js",
+    "test:unit": "node --test tests/unit/**/*.test.js",
+    "test:integration": "node --test tests/integration/**/*.test.js",
+    "postinstall": "prisma generate && node node_modules/puppeteer/install.mjs",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push"
+  },
+  "prisma": {
+    "schema": "src/prisma/schema.prisma"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^16.6.1",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "multer": "^1.4.5-lts.2",
+    "puppeteer": "^24.22.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.0",
+    "supertest": "^7.1.4"
+  }
+}

@@ -1,0 +1,67 @@
+<div class="page-header">
+  <h1>Haftalık Etüt Programı</h1>
+  <p>Pazartesi – Pazar, tekrarlayan program</p>
+</div>
+
+<div class="stat-cards" aria-label="Özet istatistikler">
+  <div class="stat-card">
+    <div class="stat-card__value" id="stat-sessions"><%= stats.sessions %></div>
+    <div class="stat-card__label">etüt toplam</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__value" id="stat-teachers"><%= stats.teachers %></div>
+    <div class="stat-card__label">öğretmen aktif</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__value" id="stat-students"><%= stats.students %></div>
+    <div class="stat-card__label">öğrenci kayıtlı</div>
+  </div>
+</div>
+
+<p class="schedule-legend" aria-hidden="true">
+  <span class="schedule-legend__item"><span class="schedule-legend__dot schedule-legend__dot--filled"></span> Dolu hücre</span>
+  <span class="schedule-legend__item"><span class="schedule-legend__dot"></span> Boş hücre</span>
+  <span class="schedule-legend__item"><span class="schedule-legend__dot schedule-legend__dot--today"></span> Bugün</span>
+</p>
+
+<div class="schedule-grid-wrapper">
+  <table class="schedule-grid" role="grid" aria-label="Haftalık etüt programı">
+    <thead>
+      <tr>
+        <th class="schedule-grid__time-col" scope="col">Saat</th>
+        <% days.forEach(function(day) { %>
+          <th scope="col" class="<%= day.key === todayKey ? 'schedule-grid__today' : '' %>"><%= day.short %></th>
+        <% }); %>
+      </tr>
+    </thead>
+    <tbody>
+      <% timeSlots.forEach(function(slot) { %>
+        <tr>
+          <th class="schedule-grid__time-col" scope="row"><%= slot.label %></th>
+          <% days.forEach(function(day) { %>
+            <%
+              const cellKey = day.key + ':' + slot.startTime + ':' + slot.endTime;
+              const sessionCount = cellMap[cellKey] || 0;
+            %>
+            <%- include('../partials/table-cell', {
+              dayKey: day.key,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+              sessionCount: sessionCount,
+              isTodayColumn: day.key === todayKey,
+            }) %>
+          <% }); %>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<dialog id="schedule-modal" class="schedule-modal-dialog">
+  <div class="schedule-modal-dialog__header">
+    <button type="button" class="btn btn--secondary btn--icon" data-action="close-modal" aria-label="Kapat">✕</button>
+  </div>
+  <div id="schedule-modal-body" class="schedule-modal-dialog__body"></div>
+</dialog>
+
+<script type="module" src="/js/schedule.js"></script>

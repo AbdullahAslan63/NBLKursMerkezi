@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title><%= heading %> — Etüt Programı</title>
+  <%- include('_pdf-styles') %>
+</head>
+<body>
+  <div class="pdf-page">
+    <header class="pdf-header">
+      <div class="pdf-header__brand"><%= appName %></div>
+      <h1 class="pdf-header__title"><%= heading %></h1>
+      <p class="pdf-header__meta">Öğretmen etüt programı</p>
+    </header>
+
+    <%- include('_schedule-grid', { days, timeSlots, cellMap }) %>
+
+    <footer class="pdf-footer">Oluşturulma: <%= generatedAt %></footer>
+  </div>
+</body>
+</html>

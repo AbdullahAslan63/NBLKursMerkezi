@@ -1,0 +1,12 @@
+<div class="session-panel">
+  <h2 class="session-panel__title"><%= dayLabel %> · <%= timeLabel %></h2>
+  <% if (!sessions || sessions.length === 0) { %>
+    <p class="session-panel__empty">Bu saatte henüz etüt yok.</p>
+  <% } else { %>
+    <ul class="session-panel__list">
+      <% sessions.forEach(function(session) { %>
+        <li><%= session.teacherName %> — <%= session.studentCount %> öğrenci</li>
+      <% }); %>
+    </ul>
+  <% } %>
+</div>
