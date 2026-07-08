@@ -10,14 +10,28 @@ export function createIndexHandler(prisma) {
         prisma.teacher.count(),
         prisma.student.count(),
         prisma.studySession.findMany({
-          select: { dayOfWeek: true, startTime: true, endTime: true },
+          select: {
+            id: true,
+            dayOfWeek: true,
+            startTime: true,
+            endTime: true,
+            teacher: { select: { name: true } },
+            _count: { select: { students: true } },
+          },
+          orderBy: { id: 'asc' },
         }),
       ]);
 
       const cellMap = {};
       for (const session of sessions) {
         const key = `${session.dayOfWeek}:${session.startTime}:${session.endTime}`;
-        cellMap[key] = (cellMap[key] || 0) + 1;
+        if (!cellMap[key]) cellMap[key] = { count: 0, sessions: [] };
+        cellMap[key].count += 1;
+        cellMap[key].sessions.push({
+          id: session.id,
+          teacherName: session.teacher.name,
+          studentCount: session._count.students,
+        });
       }
 
       await renderPage(res, 'pages/index', {

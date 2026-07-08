@@ -44,46 +44,82 @@
   </section>
 
   <section class="session-modal__section" aria-label="Etüt formu">
-    <h3 class="session-modal__subtitle" id="session-form-title">Yeni Etüt Ekle</h3>
+    <div class="session-modal__form-header">
+      <h3 class="session-modal__subtitle" id="session-form-title">Yeni Etüt Ekle</h3>
+      <div class="wizard-progress" aria-hidden="true">
+        <span class="wizard-progress__dot wizard-progress__dot--active" data-step-indicator="1">1</span>
+        <span class="wizard-progress__line"></span>
+        <span class="wizard-progress__dot" data-step-indicator="2">2</span>
+      </div>
+    </div>
 
     <% if (!teachers || teachers.length === 0) { %>
       <p class="session-modal__empty">Önce <a href="/teachers">öğretmen</a> ekleyin.</p>
     <% } else if (!students || students.length === 0) { %>
       <p class="session-modal__empty">Önce <a href="/students">öğrenci</a> ekleyin.</p>
     <% } else { %>
-      <form id="session-form" class="session-form">
-        <div class="form-field">
-          <span class="form-field__label">Öğretmen</span>
-          <div class="choice-grid" role="radiogroup" aria-label="Öğretmen seçimi">
-            <% teachers.forEach(function(teacher) { %>
-              <label class="choice-card">
-                <input type="radio" name="teacherId" value="<%= teacher.id %>">
-                <span><%= teacher.name %></span>
-              </label>
-            <% }); %>
+      <form id="session-form" class="session-form wizard">
+        <!-- Step 1: Select Teacher -->
+        <div class="wizard-step wizard-step--active" data-step="1">
+          <div class="form-field">
+            <span class="form-field__label">Öğretmen Seçin</span>
+            <div class="choice-grid" role="radiogroup" aria-label="Öğretmen seçimi">
+              <% teachers.forEach(function(teacher) { %>
+                <label class="choice-card">
+                  <input type="radio" name="teacherId" value="<%= teacher.id %>">
+                  <div class="choice-card__avatar">
+                    <i class="choice-card__icon" data-lucide="user"></i>
+                  </div>
+                  <span class="choice-card__name"><%= teacher.name %></span>
+                </label>
+              <% }); %>
+            </div>
+          </div>
+          <div class="wizard-actions">
+            <button type="button" class="btn btn--primary" data-action="next-step" disabled>Sonraki Adım</button>
           </div>
         </div>
 
-        <div class="form-field">
-          <span class="form-field__label">Öğrenciler</span>
-          <div class="choice-list" role="group" aria-label="Öğrenci seçimi">
-            <% students.forEach(function(student) { %>
-              <label class="choice-row">
-                <input type="checkbox" name="studentIds" value="<%= student.id %>">
-                <span class="choice-row__text">
-                  <span class="choice-row__main"><%= student.label %></span>
-                  <span class="choice-row__sub"><%= student.sublabel %></span>
-                </span>
-              </label>
-            <% }); %>
+        <!-- Step 2: Select Students -->
+        <div class="wizard-step" data-step="2">
+          <div class="form-field">
+            <span class="form-field__label">Öğrencileri Seçin</span>
+            
+            <!-- Smart Search -->
+            <div class="student-search-box">
+              <i class="student-search-box__icon" data-lucide="search"></i>
+              <input type="text" id="student-search-input" placeholder="Öğrenci adı veya numarası ara..." autocomplete="off">
+            </div>
+
+            <!-- Chips Container -->
+            <div class="selected-chips" id="selected-chips-container" aria-label="Seçilen öğrenciler">
+              <!-- Dynamically populated chips -->
+            </div>
+
+            <!-- Student Selection List -->
+            <div class="choice-list student-choice-list" role="group" aria-label="Öğrenci seçimi">
+              <% students.forEach(function(student) { %>
+                <label class="choice-row student-choice-row" data-search-text="<%= student.label.toLowerCase() %> <%= student.sublabel.toLowerCase() %>">
+                  <input type="checkbox" name="studentIds" value="<%= student.id %>" data-label="<%= student.label %>" data-sublabel="<%= student.sublabel %>">
+                  <span class="choice-row__checkbox-ui"></span>
+                  <span class="choice-row__text">
+                    <span class="choice-row__main"><%= student.label %></span>
+                    <span class="choice-row__sub"><%= student.sublabel %></span>
+                  </span>
+                </label>
+              <% }); %>
+            </div>
           </div>
-        </div>
 
-        <p class="form-field__error" id="session-form-error" hidden></p>
+          <p class="form-field__error" id="session-form-error" hidden></p>
 
-        <div class="form-modal__actions">
-          <button type="button" class="btn btn--secondary" id="session-form-cancel-edit" hidden>İptal</button>
-          <button type="submit" class="btn btn--primary" id="session-form-submit">Etüt Kaydet</button>
+          <div class="wizard-actions">
+            <button type="button" class="btn btn--secondary" data-action="prev-step">Geri</button>
+            <div class="wizard-actions__right">
+              <button type="button" class="btn btn--secondary" id="session-form-cancel-edit" hidden>İptal</button>
+              <button type="submit" class="btn btn--primary" id="session-form-submit">Etüt Kaydet</button>
+            </div>
+          </div>
         </div>
       </form>
     <% } %>

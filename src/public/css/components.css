@@ -81,33 +81,49 @@
   color: #1a1a2e;
 }
 
-.stat-cards {
+.stats-pills {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-bottom: var(--space-5);
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding: var(--space-1) 0;
+  margin-bottom: var(--space-4);
+  scrollbar-width: none; /* Firefox */
+  -webkit-overflow-scrolling: touch;
 }
 
-.stat-card {
+.stats-pills::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-5);
-  min-width: 140px;
+  border-radius: 999px;
   box-shadow: var(--shadow-sm);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.stat-card__value {
-  font-size: 1.5rem;
+.stat-pill__icon {
+  width: 15px;
+  height: 15px;
+  color: var(--color-primary);
+  opacity: 0.85;
+}
+
+.stat-pill__value {
   font-weight: 700;
   color: var(--color-primary);
-  line-height: 1.2;
 }
 
-.stat-card__label {
-  font-size: 0.8125rem;
+.stat-pill__label {
   color: var(--color-text-muted);
-  margin-top: var(--space-1);
+  font-weight: 500;
 }
 
 .empty-state {

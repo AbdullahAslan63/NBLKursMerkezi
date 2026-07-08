@@ -3,60 +3,61 @@
   <p>Pazartesi – Pazar, tekrarlayan program</p>
 </div>
 
-<div class="stat-cards" aria-label="Özet istatistikler">
-  <div class="stat-card">
-    <div class="stat-card__value" id="stat-sessions"><%= stats.sessions %></div>
-    <div class="stat-card__label">etüt toplam</div>
+<div class="stats-pills" aria-label="Özet istatistikler">
+  <div class="stat-pill">
+    <i data-lucide="calendar" class="stat-pill__icon"></i>
+    <span class="stat-pill__value" id="stat-sessions"><%= stats.sessions %></span>
+    <span class="stat-pill__label">etüt</span>
   </div>
-  <div class="stat-card">
-    <div class="stat-card__value" id="stat-teachers"><%= stats.teachers %></div>
-    <div class="stat-card__label">öğretmen aktif</div>
+  <div class="stat-pill">
+    <i data-lucide="graduation-cap" class="stat-pill__icon"></i>
+    <span class="stat-pill__value" id="stat-teachers"><%= stats.teachers %></span>
+    <span class="stat-pill__label">öğretmen</span>
   </div>
-  <div class="stat-card">
-    <div class="stat-card__value" id="stat-students"><%= stats.students %></div>
-    <div class="stat-card__label">öğrenci kayıtlı</div>
+  <div class="stat-pill">
+    <i data-lucide="users" class="stat-pill__icon"></i>
+    <span class="stat-pill__value" id="stat-students"><%= stats.students %></span>
+    <span class="stat-pill__label">öğrenci</span>
   </div>
 </div>
 
-<p class="schedule-legend" aria-hidden="true">
-  <span class="schedule-legend__item"><span class="schedule-legend__dot schedule-legend__dot--filled"></span> Dolu hücre</span>
-  <span class="schedule-legend__item"><span class="schedule-legend__dot"></span> Boş hücre</span>
-  <span class="schedule-legend__item"><span class="schedule-legend__dot schedule-legend__dot--today"></span> Bugün</span>
-</p>
+<%# ── Gün Seçici ── %>
+<nav class="day-selector" aria-label="Gün seçici">
+  <% days.forEach(function(day) { %>
+    <button
+      type="button"
+      class="day-selector__pill<%= day.key === todayKey ? ' day-selector__pill--active day-selector__pill--today' : '' %>"
+      data-day="<%= day.key %>"
+      aria-pressed="<%= day.key === todayKey ? 'true' : 'false' %>"
+    >
+      <span class="day-selector__short"><%= day.short %></span>
+      <span class="day-selector__full"><%= day.label %></span>
+    </button>
+  <% }); %>
+</nav>
 
-<div class="schedule-grid-wrapper">
-  <table class="schedule-grid" role="grid" aria-label="Haftalık etüt programı">
-    <thead>
-      <tr>
-        <th class="schedule-grid__time-col" scope="col">Saat</th>
-        <% days.forEach(function(day) { %>
-          <th scope="col" class="<%= day.key === todayKey ? 'schedule-grid__today' : '' %>"><%= day.short %></th>
-        <% }); %>
-      </tr>
-    </thead>
-    <tbody>
-      <% timeSlots.forEach(function(slot) { %>
-        <tr>
-          <th class="schedule-grid__time-col" scope="row"><%= slot.label %></th>
-          <% days.forEach(function(day) { %>
-            <%
-              const cellKey = day.key + ':' + slot.startTime + ':' + slot.endTime;
-              const sessionCount = cellMap[cellKey] || 0;
-            %>
-            <%- include('../partials/table-cell', {
-              dayKey: day.key,
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-              sessionCount: sessionCount,
-              isTodayColumn: day.key === todayKey,
-            }) %>
-          <% }); %>
-        </tr>
-      <% }); %>
-    </tbody>
-  </table>
-</div>
+<%# ── Timeline Panelleri (her gün için bir tane, yalnızca aktif gün görünür) ── %>
+<% days.forEach(function(day) { %>
+  <div
+    class="day-timeline<%= day.key === todayKey ? ' day-timeline--active' : '' %>"
+    data-day="<%= day.key %>"
+    role="region"
+    aria-label="<%= day.label %> programı"
+    <% if (day.key !== todayKey) { %>hidden<% } %>
+  >
+    <% timeSlots.forEach(function(slot) { %>
+      <%- include('../partials/timeline-slot', {
+        dayKey: day.key,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        timeLabel: slot.label,
+        cellMap: cellMap,
+      }) %>
+    <% }); %>
+  </div>
+<% }); %>
 
+<%# ── Modal (yapısal olarak aynı, sadece tetikleyici değişti) ── %>
 <dialog id="schedule-modal" class="schedule-modal-dialog">
   <div class="schedule-modal-dialog__header">
     <button type="button" class="btn btn--secondary btn--icon" data-action="close-modal" aria-label="Kapat">✕</button>
