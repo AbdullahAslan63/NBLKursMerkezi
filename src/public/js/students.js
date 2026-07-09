@@ -38,10 +38,71 @@ function updateEmptyState() {
   tableWrap.style.display = hasRows ? '' : 'none';
 }
 
+let activeClassFilter = 'Tümü';
+const filterChipsContainer = document.getElementById('class-filter-chips');
+
+function getUniqueClassNames() {
+  const names = new Set();
+  tbody.querySelectorAll('tr').forEach(row => {
+    if (row.dataset.className) {
+      names.add(row.dataset.className.trim());
+    }
+  });
+  return [...names].sort((a, b) => a.localeCompare(b, { numeric: true }));
+}
+
+function renderClassFilterChips() {
+  if (!filterChipsContainer) return;
+  filterChipsContainer.innerHTML = '';
+
+  const classes = getUniqueClassNames();
+  
+  if (activeClassFilter !== 'Tümü' && !classes.includes(activeClassFilter)) {
+    activeClassFilter = 'Tümü';
+  }
+
+  const allChip = document.createElement('button');
+  allChip.type = 'button';
+  allChip.className = `filter-chip${activeClassFilter === 'Tümü' ? ' filter-chip--active' : ''}`;
+  allChip.textContent = 'Tümü';
+  allChip.addEventListener('click', () => {
+    activeClassFilter = 'Tümü';
+    updateActiveChipStyles();
+    filterRows();
+  });
+  filterChipsContainer.appendChild(allChip);
+
+  classes.forEach(cName => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = `filter-chip${activeClassFilter === cName ? ' filter-chip--active' : ''}`;
+    chip.textContent = cName;
+    chip.addEventListener('click', () => {
+      activeClassFilter = cName;
+      updateActiveChipStyles();
+      filterRows();
+    });
+    filterChipsContainer.appendChild(chip);
+  });
+}
+
+function updateActiveChipStyles() {
+  filterChipsContainer.querySelectorAll('.filter-chip').forEach(chip => {
+    const isActive = chip.textContent === activeClassFilter;
+    chip.classList.toggle('filter-chip--active', isActive);
+  });
+}
+
 function filterRows() {
   const q = searchInput.value.trim().toLowerCase();
   tbody.querySelectorAll('tr').forEach((row) => {
-    row.hidden = q && !row.dataset.search.includes(q);
+    const rowSearch = row.dataset.search || '';
+    const rowClass = row.dataset.className || '';
+    
+    const matchesSearch = !q || rowSearch.includes(q);
+    const matchesClass = activeClassFilter === 'Tümü' || rowClass === activeClassFilter;
+    
+    row.hidden = !(matchesSearch && matchesClass);
   });
 }
 
@@ -53,6 +114,7 @@ function escapeHtml(text) {
 
 function appendRow(student) {
   const tr = document.createElement('tr');
+  tr.className = 'row-fade-in';
   tr.dataset.id = student.id;
   tr.dataset.number = student.studentNumber;
   tr.dataset.first = student.firstName;
@@ -76,6 +138,7 @@ function appendRow(student) {
   `;
   tbody.appendChild(tr);
   updateEmptyState();
+  renderClassFilterChips();
 }
 
 function updateRow(row, student) {
@@ -88,6 +151,7 @@ function updateRow(row, student) {
   row.querySelector('.student-cell__name').textContent = `${student.firstName} ${student.lastName}`;
   row.querySelector('.student-cell__number').textContent = student.studentNumber;
   row.querySelector('.badge').textContent = student.className;
+  renderClassFilterChips();
 }
 
 async function resolveClassId() {
@@ -210,8 +274,12 @@ tbody.addEventListener('click', async (e) => {
 
     try {
       const result = await apiJson(`/students/${id}`, { method: 'DELETE' });
-      row.remove();
-      updateEmptyState();
+      row.classList.add('row-fade-out');
+      setTimeout(() => {
+        row.remove();
+        updateEmptyState();
+        renderClassFilterChips();
+      }, 300);
       showToast(result.message || 'Öğrenci silindi.');
     } catch (err) {
       showToast(err.message, 'error');
@@ -387,7 +455,24 @@ importForm?.addEventListener('submit', async (e) => {
     importResult.hidden = false;
     showToast(result.message, 'success');
 
-    setTimeout(() => window.location.reload(), 1500);
+    // Dynamically insert or update imported student records in the DOM
+    if (Array.isArray(result.data.students)) {
+      result.data.students.forEach(student => {
+        const existingRow = tbody.querySelector(`tr[data-id="${student.id}"]`);
+        if (existingRow) {
+          updateRow(existingRow, student);
+        } else {
+          appendRow(student);
+        }
+      });
+      filterRows();
+    }
+
+    setTimeout(() => {
+      closeImportModal();
+      importResult.hidden = true;
+      importResult.innerHTML = '';
+    }, 2000);
   } catch (err) {
     importFormError.textContent = err.message;
     importFormError.hidden = false;
@@ -395,3 +480,6 @@ importForm?.addEventListener('submit', async (e) => {
     document.getElementById('btn-do-import').disabled = false;
   }
 });
+
+// Dynamic Class Chips Initial Load
+renderClassFilterChips();

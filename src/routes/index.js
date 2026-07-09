@@ -22,17 +22,25 @@ export function createIndexHandler(prisma) {
         }),
       ]);
 
-      const cellMap = {};
+      const daySessionsMap = {};
+      DAYS_OF_WEEK.forEach((d) => {
+        daySessionsMap[d.key] = [];
+      });
+
       for (const session of sessions) {
-        const key = `${session.dayOfWeek}:${session.startTime}:${session.endTime}`;
-        if (!cellMap[key]) cellMap[key] = { count: 0, sessions: [] };
-        cellMap[key].count += 1;
-        cellMap[key].sessions.push({
+        daySessionsMap[session.dayOfWeek].push({
           id: session.id,
+          startTime: session.startTime,
+          endTime: session.endTime,
           teacherName: session.teacher.name,
           studentCount: session._count.students,
         });
       }
+
+      // Sort chronologically by startTime
+      Object.keys(daySessionsMap).forEach((dayKey) => {
+        daySessionsMap[dayKey].sort((a, b) => a.startTime.localeCompare(b.startTime));
+      });
 
       await renderPage(res, 'pages/index', {
         title: 'Haftalık Etüt Programı',
@@ -40,7 +48,7 @@ export function createIndexHandler(prisma) {
         days: DAYS_OF_WEEK,
         timeSlots: TIME_SLOTS,
         todayKey: getTodayDayKey(),
-        cellMap,
+        daySessionsMap,
         stats: {
           sessions: sessionCount,
           teachers: teacherCount,

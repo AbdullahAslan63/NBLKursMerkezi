@@ -61,6 +61,111 @@
       <form id="session-form" class="session-form wizard">
         <!-- Step 1: Select Teacher -->
         <div class="wizard-step wizard-step--active" data-step="1">
+          <!-- Time Selection UI -->
+          <div class="form-field time-selection-card">
+            <span class="form-field__label">Etüt Saatleri</span>
+            
+            <% 
+              const startParts = (startTime || '09:00').split(':');
+              const startH = startParts[0];
+              const startM = startParts[1];
+              const endParts = (endTime || '10:00').split(':');
+              const endH = endParts[0];
+              const endM = endParts[1];
+            %>
+
+            <div class="digital-pickers-container">
+              <!-- Start Time Picker -->
+              <div class="digital-picker-card" id="start-time-picker" data-picker-type="start">
+                <span class="digital-picker-label">Başlangıç</span>
+                <input type="hidden" id="session-start-time" name="startTime" value="<%= startTime %>">
+                
+                <div class="digital-display">
+                  <!-- Hour Block -->
+                  <div class="digital-digit-group" data-unit="hours">
+                    <button type="button" class="stepper-btn stepper-btn--up" aria-label="Saati artır">
+                      <i data-lucide="chevron-up"></i>
+                    </button>
+                    <span class="digital-number digital-number--hours"><%= startH %></span>
+                    <button type="button" class="stepper-btn stepper-btn--down" aria-label="Saati azalt">
+                      <i data-lucide="chevron-down"></i>
+                    </button>
+                  </div>
+                  
+                  <div class="digital-colon">:</div>
+                  
+                  <!-- Minute Block -->
+                  <div class="digital-digit-group" data-unit="minutes">
+                    <button type="button" class="stepper-btn stepper-btn--up" aria-label="Dakikayı artır">
+                      <i data-lucide="chevron-up"></i>
+                    </button>
+                    <span class="digital-number digital-number--minutes"><%= startM %></span>
+                    <button type="button" class="stepper-btn stepper-btn--down" aria-label="Dakikayı azalt">
+                      <i data-lucide="chevron-down"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Quick Minute Pills -->
+                <div class="quick-minute-pills">
+                  <button type="button" class="minute-pill-btn" data-value="00">00</button>
+                  <button type="button" class="minute-pill-btn" data-value="15">15</button>
+                  <button type="button" class="minute-pill-btn" data-value="30">30</button>
+                  <button type="button" class="minute-pill-btn" data-value="45">45</button>
+                </div>
+              </div>
+
+              <!-- End Time Picker -->
+              <div class="digital-picker-card" id="end-time-picker" data-picker-type="end">
+                <span class="digital-picker-label">Bitiş</span>
+                <input type="hidden" id="session-end-time" name="endTime" value="<%= endTime %>">
+                
+                <div class="digital-display">
+                  <!-- Hour Block -->
+                  <div class="digital-digit-group" data-unit="hours">
+                    <button type="button" class="stepper-btn stepper-btn--up" aria-label="Saati artır">
+                      <i data-lucide="chevron-up"></i>
+                    </button>
+                    <span class="digital-number digital-number--hours"><%= endH %></span>
+                    <button type="button" class="stepper-btn stepper-btn--down" aria-label="Saati azalt">
+                      <i data-lucide="chevron-down"></i>
+                    </button>
+                  </div>
+                  
+                  <div class="digital-colon">:</div>
+                  
+                  <!-- Minute Block -->
+                  <div class="digital-digit-group" data-unit="minutes">
+                    <button type="button" class="stepper-btn stepper-btn--up" aria-label="Dakikayı artır">
+                      <i data-lucide="chevron-up"></i>
+                    </button>
+                    <span class="digital-number digital-number--minutes"><%= endM %></span>
+                    <button type="button" class="stepper-btn stepper-btn--down" aria-label="Dakikayı azalt">
+                      <i data-lucide="chevron-down"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Quick Minute Pills -->
+                <div class="quick-minute-pills">
+                  <button type="button" class="minute-pill-btn" data-value="00">00</button>
+                  <button type="button" class="minute-pill-btn" data-value="15">15</button>
+                  <button type="button" class="minute-pill-btn" data-value="30">30</button>
+                  <button type="button" class="minute-pill-btn" data-value="45">45</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="duration-chips-wrapper">
+              <span class="duration-chips-title">Hızlı Süre:</span>
+              <div class="duration-chips">
+                <button type="button" class="duration-chip" data-minutes="40">+40 Dk</button>
+                <button type="button" class="duration-chip" data-minutes="60">+60 Dk</button>
+                <button type="button" class="duration-chip" data-minutes="90">+90 Dk</button>
+              </div>
+            </div>
+          </div>
+
           <div class="form-field">
             <span class="form-field__label">Öğretmen Seçin</span>
             <div class="choice-grid" role="radiogroup" aria-label="Öğretmen seçimi">

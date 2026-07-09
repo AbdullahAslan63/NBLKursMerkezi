@@ -1,0 +1,47 @@
+<%
+  // Simple hashing function to map teacher's name to a pastel color theme class
+  function getTeacherColorClass(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = ['blue', 'green', 'orange', 'purple', 'rose', 'amber'];
+    const color = colors[Math.abs(hash) % colors.length];
+    return `timeline-card--${color}`;
+  }
+%>
+<div
+  class="timeline-row agenda-row"
+  data-day="<%= dayKey %>"
+  data-start="<%= group.startTime %>"
+  data-end="<%= group.endTime %>"
+  data-session-count="<%= group.sessions.length %>"
+>
+  <div class="timeline-row__time"><%= group.timeKey %></div>
+  <div class="timeline-row__track">
+    <span class="timeline-row__dot timeline-row__dot--filled"></span>
+  </div>
+  <div class="timeline-row__content timeline-cards-row">
+    <% group.sessions.forEach(function(session) { %>
+      <button
+        type="button"
+        class="timeline-card <%= getTeacherColorClass(session.teacherName) %>"
+        data-day="<%= dayKey %>"
+        data-start="<%= session.startTime %>"
+        data-end="<%= session.endTime %>"
+        aria-label="<%= session.teacherName %> — <%= session.studentCount %> öğrenci"
+      >
+        <div class="timeline-card__body">
+          <span class="timeline-card__teacher">
+            <i data-lucide="graduation-cap" class="timeline-card__teacher-icon"></i>
+            <%= session.teacherName %>
+          </span>
+          <span class="timeline-card__students">
+            <i data-lucide="users" class="timeline-card__students-icon"></i>
+            <%= session.studentCount %> öğrenci
+          </span>
+        </div>
+      </button>
+    <% }); %>
+  </div>
+</div>

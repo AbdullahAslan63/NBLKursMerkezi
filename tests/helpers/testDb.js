@@ -10,11 +10,13 @@ export function createTestPrisma() {
 
 /** FK sırasına göre tabloları temizle */
 export async function resetDatabase(prisma) {
-  await prisma.studySessionStudent.deleteMany();
-  await prisma.studySession.deleteMany();
-  await prisma.student.deleteMany();
-  await prisma.teacher.deleteMany();
-  await prisma.schoolClass.deleteMany();
+  await prisma.$transaction([
+    prisma.studySessionStudent.deleteMany(),
+    prisma.studySession.deleteMany(),
+    prisma.student.deleteMany(),
+    prisma.teacher.deleteMany(),
+    prisma.schoolClass.deleteMany(),
+  ]);
 }
 
 export async function isDatabaseAvailable(prisma) {

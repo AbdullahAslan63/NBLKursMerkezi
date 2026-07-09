@@ -170,6 +170,17 @@ async function refreshPanel() {
   }
 }
 
+/* ── Zaman Hesaplayıcı Yardımcı Fonksiyonu ── */
+function addMinutesToTime(timeStr, minutes) {
+  if (!timeStr) return '';
+  const [hours, mins] = timeStr.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours, mins + minutes, 0, 0);
+  const nextHours = String(date.getHours()).padStart(2, '0');
+  const nextMins = String(date.getMinutes()).padStart(2, '0');
+  return `${nextHours}:${nextMins}`;
+}
+
 /* ── Wizard Başlatıcı ── */
 function initWizard(form) {
   if (!form) return;
@@ -182,6 +193,143 @@ function initWizard(form) {
   const chipsContainer = form.querySelector('#selected-chips-container');
   const studentRows = form.querySelectorAll('.student-choice-row');
   const progressDots = modalBody.querySelectorAll('[data-step-indicator]');
+
+  // Zaman girdileri ve süre butonları
+  const startTimeInput = form.querySelector('#session-start-time');
+  const endTimeInput = form.querySelector('#session-end-time');
+  const durationChips = form.querySelectorAll('.duration-chip');
+
+  /* ── Modern Digital Picker & Stepper Initialization ── */
+  function initDigitalPickers(form) {
+    const startCard = form.querySelector('#start-time-picker');
+    const endCard = form.querySelector('#end-time-picker');
+    if (!startCard || !endCard) return;
+
+    function updatePickerDisplay(card, hours, minutes) {
+      const hStr = String(hours).padStart(2, '0');
+      const mStr = String(minutes).padStart(2, '0');
+
+      const hDisplay = card.querySelector('.digital-number--hours');
+      const mDisplay = card.querySelector('.digital-number--minutes');
+      if (hDisplay) hDisplay.textContent = hStr;
+      if (mDisplay) mDisplay.textContent = mStr;
+
+      const input = card.querySelector('input[type="hidden"]');
+      if (input) {
+        const oldVal = input.value;
+        const newVal = `${hStr}:${mStr}`;
+        if (oldVal !== newVal) {
+          input.value = newVal;
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    }
+
+    function setupPickerCard(card) {
+      const input = card.querySelector('input[type="hidden"]');
+      
+      function getVal() {
+        const val = input.value || '09:00';
+        const [h, m] = val.split(':').map(Number);
+        return { hours: h, minutes: m };
+      }
+
+      // Hour Steppers
+      const hourGroup = card.querySelector('[data-unit="hours"]');
+      const hourUp = hourGroup?.querySelector('.stepper-btn--up');
+      const hourDown = hourGroup?.querySelector('.stepper-btn--down');
+      const hourDisplay = hourGroup?.querySelector('.digital-number');
+
+      hourUp?.addEventListener('click', () => {
+        if (input.disabled) return;
+        const current = getVal();
+        let newHours = current.hours + 1;
+        if (newHours > 23) newHours = 0;
+        updatePickerDisplay(card, newHours, current.minutes);
+        triggerGlow(hourDisplay);
+      });
+
+      hourDown?.addEventListener('click', () => {
+        if (input.disabled) return;
+        const current = getVal();
+        let newHours = current.hours - 1;
+        if (newHours < 0) newHours = 23;
+        updatePickerDisplay(card, newHours, current.minutes);
+        triggerGlow(hourDisplay);
+      });
+
+      // Minute Steppers
+      const minuteGroup = card.querySelector('[data-unit="minutes"]');
+      const minuteUp = minuteGroup?.querySelector('.stepper-btn--up');
+      const minuteDown = minuteGroup?.querySelector('.stepper-btn--down');
+      const minuteDisplay = minuteGroup?.querySelector('.digital-number');
+
+      minuteUp?.addEventListener('click', () => {
+        if (input.disabled) return;
+        const current = getVal();
+        let newMinutes = current.minutes + 1;
+        if (newMinutes > 59) newMinutes = 0;
+        updatePickerDisplay(card, current.hours, newMinutes);
+        triggerGlow(minuteDisplay);
+      });
+
+      minuteDown?.addEventListener('click', () => {
+        if (input.disabled) return;
+        const current = getVal();
+        let newMinutes = current.minutes - 1;
+        if (newMinutes < 0) newMinutes = 59;
+        updatePickerDisplay(card, current.hours, newMinutes);
+        triggerGlow(minuteDisplay);
+      });
+
+      // Quick Minute Pills
+      card.querySelectorAll('.minute-pill-btn').forEach(pill => {
+        pill.addEventListener('click', () => {
+          if (input.disabled) return;
+          const current = getVal();
+          const targetMins = Number(pill.dataset.value);
+          updatePickerDisplay(card, current.hours, targetMins);
+          triggerGlow(minuteDisplay);
+        });
+      });
+    }
+
+    function triggerGlow(element) {
+      if (!element) return;
+      element.classList.add('digital-number--focused');
+      setTimeout(() => {
+        element.classList.remove('digital-number--focused');
+      }, 500);
+    }
+
+    setupPickerCard(startCard);
+    setupPickerCard(endCard);
+
+    // Expose setter for calculated times
+    form.setWheelTime = function(pickerId, timeStr) {
+      const card = form.querySelector(`#${pickerId}`);
+      if (card && timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        updatePickerDisplay(card, h, m);
+      }
+    };
+
+    // Sync disabled state
+    form.syncWheelDisabledState = function(isEditMode) {
+      form.querySelectorAll('.digital-picker-card').forEach(card => {
+        card.classList.toggle('digital-picker-card--disabled', isEditMode);
+        const input = card.querySelector('input[type="hidden"]');
+        if (input) input.disabled = isEditMode;
+        
+        card.querySelectorAll('.stepper-btn, .minute-pill-btn').forEach(btn => {
+          btn.disabled = isEditMode;
+        });
+      });
+    };
+  }
+
+  // Initialize Custom Digital Stepper Pickers
+  initDigitalPickers(form);
 
   function goToStep(stepNum) {
     if (stepNum === 1) {
@@ -201,6 +349,23 @@ function initWizard(form) {
 
   nextBtn?.addEventListener('click', () => goToStep(2));
   prevBtn?.addEventListener('click', () => goToStep(1));
+
+  // Hızlı Süre Butonları Tıklama Dinleyicisi
+  durationChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (startTimeInput && endTimeInput && !startTimeInput.disabled) {
+        const minutes = Number(chip.dataset.minutes);
+        const startTimeVal = startTimeInput.value;
+        if (startTimeVal) {
+          const calculatedEndTime = addMinutesToTime(startTimeVal, minutes);
+          endTimeInput.value = calculatedEndTime;
+          endTimeInput.dispatchEvent(new Event('change', { bubbles: true }));
+          // Programmatically spin/scroll the End Time wheels to reflect the calculation!
+          form.setWheelTime('end-time-picker', calculatedEndTime);
+        }
+      }
+    });
+  });
 
   const teacherRadios = form.querySelectorAll('input[name="teacherId"]');
   function updateNextButtonState() {
@@ -284,6 +449,20 @@ function initWizard(form) {
       cb.closest('.student-choice-row')?.classList.remove('student-choice-row--selected');
     });
 
+    // Zaman alanlarını düzenleme moduna göre etkinleştir/devre dışı bırak
+    const isEditMode = editingSessionId !== null;
+    form.syncWheelDisabledState(isEditMode);
+    
+    durationChips.forEach(chip => {
+      chip.disabled = isEditMode;
+    });
+
+    // Sync wheels scroll states to input pre-filled values
+    if (form.setWheelTime) {
+      if (startTimeInput) form.setWheelTime('start-time-picker', startTimeInput.value);
+      if (endTimeInput) form.setWheelTime('end-time-picker', endTimeInput.value);
+    }
+
     goToStep(1);
     if (searchInput) {
       searchInput.value = '';
@@ -311,6 +490,10 @@ function bindPanelEvents() {
     const container = modalBody.querySelector('.session-modal');
     const teacherInput = form.querySelector('input[name="teacherId"]:checked');
     const studentInputs = [...form.querySelectorAll('input[name="studentIds"]:checked')];
+
+    // Form üzerindeki zaman picker değerlerini oku
+    const startTimeInput = form.querySelector('#session-start-time');
+    const endTimeInput = form.querySelector('#session-end-time');
 
     if (!teacherInput) {
       if (errorEl) {
@@ -340,19 +523,17 @@ function bindPanelEvents() {
             method: 'POST',
             body: {
               dayOfWeek: container.dataset.day,
-              startTime: container.dataset.start,
-              endTime: container.dataset.end,
+              startTime: startTimeInput ? startTimeInput.value : container.dataset.start,
+              endTime: endTimeInput ? endTimeInput.value : container.dataset.end,
               ...payload,
             },
           });
 
       showToast(result.message || (editingSessionId ? 'Etüt güncellendi.' : 'Etüt kaydedildi.'));
-      if (!editingSessionId && activeCell) {
-        updateTimelineRow(activeCell, 1);
-        bumpSessionStat(1);
-      }
-      clearEditMode();
-      await refreshPanel();
+      closeModal();
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (err) {
       if (errorEl) {
         errorEl.textContent = err.message;
@@ -382,12 +563,10 @@ function bindPanelEvents() {
         const sessionId = Number(btn.dataset.sessionId);
         const result = await apiJson(`/api/sessions/${sessionId}`, { method: 'DELETE' });
         showToast(result.message || 'Etüt silindi.');
-        if (editingSessionId === sessionId) clearEditMode();
-        if (activeCell) {
-          updateTimelineRow(activeCell, -1);
-          bumpSessionStat(-1);
-        }
-        await refreshPanel();
+        closeModal();
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       } catch (err) {
         showToast(err.message, 'error');
       }
@@ -408,7 +587,7 @@ function bindPanelEvents() {
 /* ── Timeline tıklama delegasyonu ── */
 document.querySelectorAll('.day-timeline').forEach((timeline) => {
   timeline.addEventListener('click', (e) => {
-    const trigger = e.target.closest('.timeline-card') || e.target.closest('.timeline-empty');
+    const trigger = e.target.closest('.timeline-card');
     if (!trigger) return;
     editingSessionId = null;
     loadPanel(trigger).catch((err) => {
@@ -417,7 +596,25 @@ document.querySelectorAll('.day-timeline').forEach((timeline) => {
   });
 });
 
-/* ── Lucide ikonlarını yeniden render et (timeline-slot partial'ında kullanılıyor) ── */
+/* ── Floating Action Button (FAB) Tıklama Dinleyicisi ── */
+const fabBtn = document.getElementById('fab-add-session');
+fabBtn?.addEventListener('click', () => {
+  editingSessionId = null;
+  // Mock trigger to load the modal for the active day with a default time range
+  const triggerMock = {
+    dataset: {
+      day: activeDayKey,
+      start: '09:00',
+      end: '10:00'
+    },
+    closest: () => null
+  };
+  loadPanel(triggerMock).catch((err) => {
+    showToast(err.message || 'Panel açılamadı.', 'error');
+  });
+});
+
+/* ── Lucide ikonlarını yeniden render et ── */
 if (typeof lucide !== 'undefined') {
   lucide.createIcons();
 }

@@ -165,10 +165,18 @@
   padding: var(--space-2) 0;
 }
 
+.timeline-cards-row {
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: var(--space-3) !important;
+}
+
 /* ── Etüt Kartı ── */
 .timeline-card {
   display: flex;
-  width: 100%;
+  flex: 1 1 240px;
+  max-width: 320px;
+  width: auto;
   padding: var(--space-3) var(--space-4);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -181,6 +189,13 @@
   text-align: left;
   transition: box-shadow var(--transition-fast), transform var(--transition-fast),
     border-color var(--transition-fast), background var(--transition-fast);
+}
+
+@media (max-width: 576px) {
+  .timeline-card {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 .timeline-card:hover {
@@ -1119,4 +1134,442 @@
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
+
+/* ── Zaman Seçici & Süre Butonları Stilleri ── */
+.time-selection-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  margin-bottom: var(--space-4);
+}
+
+.digital-pickers-container {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .digital-pickers-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .digital-picker-card {
+    max-width: 260px !important;
+    width: 100%;
+  }
+}
+
+.digital-picker-card {
+  flex: 1;
+  max-width: 180px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all var(--transition-fast) ease;
+}
+
+.digital-picker-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+
+.digital-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.digital-digit-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stepper-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast) ease;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  color: #00d2ff;
+  background: rgba(0, 210, 255, 0.05);
+}
+
+.stepper-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.digital-number {
+  font-family: monospace, inherit;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast) ease;
+  user-select: none;
+}
+
+[data-theme="dark"] .digital-number {
+  color: #e0f2fe;
+  text-shadow: 0 0 2px rgba(0, 210, 255, 0.2);
+}
+
+.digital-picker-card:not(.digital-picker-card--disabled) .digital-number:hover {
+  color: #00d2ff;
+  text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
+}
+
+.digital-number--focused {
+  color: #00d2ff !important;
+  text-shadow: 0 0 12px rgba(0, 210, 255, 0.8) !important;
+  transform: scale(1.05);
+}
+
+.digital-colon {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #00d2ff;
+  line-height: 1;
+  margin-bottom: 2px;
+  user-select: none;
+  text-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
+}
+
+.quick-minute-pills {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.minute-pill-btn {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 0;
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+}
+
+.minute-pill-btn:hover:not(:disabled) {
+  border-color: #00d2ff;
+  color: #fff;
+  background: rgba(0, 210, 255, 0.05);
+}
+
+.minute-pill-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.digital-picker-card--disabled {
+  opacity: 0.55;
+}
+
+.digital-picker-card--disabled .stepper-btn,
+.digital-picker-card--disabled .minute-pill-btn {
+  cursor: not-allowed;
+}
+
+
+/* Quick Duration Chips */
+.duration-chips-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 2px;
+  border-top: 1px dashed var(--color-border);
+  padding-top: var(--space-2);
+}
+
+.duration-chips-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.duration-chips {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.duration-chip {
+  padding: var(--space-1) var(--space-2);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.duration-chip:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.duration-chip:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.duration-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  color: var(--color-text-muted);
+}
+
+/* ── Floating Action Button (FAB) ── */
+.fab-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(30, 58, 95, 0.35);
+  cursor: pointer;
+  z-index: 99;
+  transition: transform var(--transition-fast) cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.fab-btn:hover {
+  transform: scale(1.08);
+  background: #254a75;
+  box-shadow: 0 6px 20px rgba(30, 58, 95, 0.45);
+}
+
+.fab-btn:active {
+  transform: scale(0.95);
+}
+
+.fab-btn__icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* ── Agenda Empty State ── */
+.agenda-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  max-width: 320px;
+  margin: var(--space-6) auto 0;
+  animation: agenda-fade-in var(--transition-normal) ease-out;
+}
+
+@keyframes agenda-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.agenda-empty-state__icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.agenda-empty-state__icon {
+  width: 28px;
+  height: 28px;
+  opacity: 0.8;
+}
+
+.agenda-empty-state__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2);
+}
+
+.agenda-empty-state__text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Agenda timeline layout enhancements */
+.agenda-timeline-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin-top: var(--space-4);
+}
+
+.agenda-row {
+  margin-bottom: 0;
+}
+
+/* ── Sınıf Filtreleme Çipleri Stilleri ── */
+.filter-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: calc(-1 * var(--space-2));
+  margin-bottom: var(--space-4);
+  padding: 2px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  padding: var(--space-1-5) var(--space-3);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  user-select: none;
+}
+
+.filter-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.filter-chip--active {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.25);
+}
+
+.filter-chip:active {
+  transform: scale(0.96);
+}
+
+/* ── Öğrenci Satır Geçiş Animasyonları ── */
+.row-fade-in {
+  animation: student-row-fade-in 0.35s ease forwards;
+}
+
+@keyframes student-row-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.row-fade-out {
+  opacity: 0 !important;
+  transform: translateX(-16px) !important;
+  transition: opacity 0.3s ease, transform 0.3s ease !important;
+}
+
+/* ── Custom Wizard Buttons ── */
+#session-form-cancel-edit {
+  background: transparent !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--space-2) var(--space-4) !important;
+  font-weight: 600 !important;
+  transition: all var(--transition-fast) ease !important;
+}
+
+#session-form-cancel-edit:hover {
+  border-color: var(--color-text) !important;
+  color: var(--color-text) !important;
+  background: var(--color-bg) !important;
+}
+
+#session-form-submit {
+  background: #0070f3 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--space-2) var(--space-5) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(0, 112, 243, 0.3) !important;
+  transition: all var(--transition-fast) ease !important;
+}
+
+#session-form-submit:hover {
+  background: #0060df !important;
+  box-shadow: 0 6px 20px rgba(0, 112, 243, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+#session-form-submit:active {
+  transform: translateY(0) !important;
+}
+
+
+
+
+
 

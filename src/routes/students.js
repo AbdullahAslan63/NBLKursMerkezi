@@ -161,7 +161,7 @@ export default function createStudentsRouter(prisma) {
         throw err;
       }
 
-      const result = await importStudents(prisma, schoolClass.id, parsed);
+      const result = await importStudents(prisma, schoolClass.id, schoolClass.name, parsed);
       const total = result.added + result.updated;
       const message =
         total > 0
@@ -175,6 +175,7 @@ export default function createStudentsRouter(prisma) {
           skipped: result.skipped,
           className: schoolClass.name,
           rowErrors: result.rowErrors,
+          students: result.students,
         },
         { message },
       );
