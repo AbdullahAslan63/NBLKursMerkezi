@@ -1,5 +1,6 @@
 import { apiJson, apiFormData } from './api.js';
 import { showToast, showConfirm } from './ui.js';
+import { exportListPdf } from './listPdfExport.js';
 
 const tbody = document.getElementById('students-tbody');
 const emptyEl = document.getElementById('students-empty');
@@ -483,3 +484,15 @@ importForm?.addEventListener('submit', async (e) => {
 
 // Dynamic Class Chips Initial Load
 renderClassFilterChips();
+
+/* PDF Liste Dışa Aktarma */
+document.getElementById('btn-export-pdf-students')?.addEventListener('click', (e) => {
+  const today = new Date().toISOString().slice(0, 10);
+  exportListPdf({
+    title: 'Öğrenci Listesi',
+    filename: `Ogrenciler_Listesi_${today}.pdf`,
+    tbodyId: 'students-tbody',
+    colIndices: [0, 1], // Öğrenci, Sınıf — İşlem sütunu hariç
+    triggerBtn: e.currentTarget,
+  });
+});

@@ -5,6 +5,7 @@ import {
   buildTeacherCellMap,
   studentDisplayName,
   studentSubtitle,
+  getDynamicTimeSlots,
 } from '../lib/pdfScheduleData.js';
 import {
   enqueuePdfJob,
@@ -72,9 +73,11 @@ export default function createPdfRouter(prisma) {
     const base = pdfBaseData(req);
     const pages = students.map((student) => {
       const sessions = student.sessions.map((link) => link.studySession);
+      const timeSlots = getDynamicTimeSlots(sessions);
       return {
         heading: studentDisplayName(student),
         subheading: studentSubtitle(student),
+        timeSlots,
         cellMap: buildStudentCellMap(sessions),
       };
     });
@@ -102,11 +105,16 @@ export default function createPdfRouter(prisma) {
     });
 
     const base = pdfBaseData(req);
-    const pages = teachers.map((teacher) => ({
-      heading: teacher.name,
-      subheading: `${teacher.studySessions.length} etüt`,
-      cellMap: buildTeacherCellMap(teacher.studySessions),
-    }));
+    const pages = teachers.map((teacher) => {
+      const sessions = teacher.studySessions;
+      const timeSlots = getDynamicTimeSlots(sessions);
+      return {
+        heading: teacher.name,
+        subheading: teacher.subject ? `${teacher.subject} · ${sessions.length} etüt` : `${sessions.length} etüt`,
+        timeSlots,
+        cellMap: buildTeacherCellMap(sessions),
+      };
+    });
 
     return handlePdfRoute(res, 'ogretmen-programlari.pdf', () =>
       generatePdfFromTemplate('bulk-schedules', {
@@ -139,10 +147,12 @@ export default function createPdfRouter(prisma) {
     const sessions = student.sessions.map((link) => link.studySession);
     const name = studentDisplayName(student);
     const filename = `ogrenci-${student.studentNumber}.pdf`;
+    const timeSlots = getDynamicTimeSlots(sessions);
 
     return handlePdfRoute(res, filename, () =>
       generatePdfFromTemplate('student-schedule', {
         ...pdfBaseData(req),
+        timeSlots,
         heading: name,
         subheading: studentSubtitle(student),
         cellMap: buildStudentCellMap(sessions),
@@ -168,12 +178,17 @@ export default function createPdfRouter(prisma) {
     if (!teacher) return res.fail('NOT_FOUND', 'Öğretmen bulunamadı.', { status: 404 });
 
     const filename = `ogretmen-${teacher.name.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+    const sessions = teacher.studySessions;
+    const timeSlots = getDynamicTimeSlots(sessions);
+    const teacherSub = teacher.subject ? `${teacher.subject} · ${sessions.length} etüt` : `${sessions.length} etüt`;
 
     return handlePdfRoute(res, filename, () =>
       generatePdfFromTemplate('teacher-schedule', {
         ...pdfBaseData(req),
+        timeSlots,
         heading: teacher.name,
-        cellMap: buildTeacherCellMap(teacher.studySessions),
+        subheading: teacherSub,
+        cellMap: buildTeacherCellMap(sessions),
       }),
     );
   });

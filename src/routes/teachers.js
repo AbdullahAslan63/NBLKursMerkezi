@@ -27,6 +27,7 @@ export default function createTeachersRouter(prisma) {
         teachers: teachers.map((t) => ({
           id: t.id,
           name: t.name,
+          subject: t.subject,
           sessionCount: t._count.studySessions,
         })),
       });
@@ -38,6 +39,7 @@ export default function createTeachersRouter(prisma) {
   router.post('/', async (req, res, next) => {
     try {
       const name = normalizeName(req.body.name);
+      const subject = normalizeName(req.body.subject);
       if (!name) {
         return res.fail('VALIDATION_ERROR', 'Öğretmen adı zorunludur.', {
           status: 400,
@@ -45,8 +47,8 @@ export default function createTeachersRouter(prisma) {
         });
       }
 
-      const teacher = await prisma.teacher.create({ data: { name } });
-      return res.created({ id: teacher.id, name: teacher.name }, 'Öğretmen eklendi.');
+      const teacher = await prisma.teacher.create({ data: { name, subject } });
+      return res.created({ id: teacher.id, name: teacher.name, subject: teacher.subject }, 'Öğretmen eklendi.');
     } catch (err) {
       next(err);
     }
@@ -60,6 +62,7 @@ export default function createTeachersRouter(prisma) {
       }
 
       const name = normalizeName(req.body.name);
+      const subject = normalizeName(req.body.subject);
       if (!name) {
         return res.fail('VALIDATION_ERROR', 'Öğretmen adı zorunludur.', {
           status: 400,
@@ -72,8 +75,8 @@ export default function createTeachersRouter(prisma) {
         return res.fail('NOT_FOUND', 'Öğretmen bulunamadı.', { status: 404 });
       }
 
-      const teacher = await prisma.teacher.update({ where: { id }, data: { name } });
-      return res.success({ id: teacher.id, name: teacher.name }, { message: 'Öğretmen güncellendi.' });
+      const teacher = await prisma.teacher.update({ where: { id }, data: { name, subject } });
+      return res.success({ id: teacher.id, name: teacher.name, subject: teacher.subject }, { message: 'Öğretmen güncellendi.' });
     } catch (err) {
       next(err);
     }

@@ -37,11 +37,11 @@
   --color-primary-hover: #7aa8e0;
   --color-accent: #d4b84a;
   --color-accent-muted: rgba(212, 184, 74, 0.15);
-  --color-bg: #0f1419;
-  --color-surface: #1a2332;
-  --color-text: #e8eaed;
-  --color-text-muted: #9ca3af;
-  --color-border: #2d3748;
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f8fafc;
+  --color-text-muted: #cbd5e1;
+  --color-border: rgba(255, 255, 255, 0.1);
   --color-success: #34d399;
   --color-danger: #f87171;
   --color-today-bg: rgba(91, 143, 212, 0.12);

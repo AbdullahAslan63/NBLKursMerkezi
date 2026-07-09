@@ -4,6 +4,7 @@
     <p>MEBBIS IOG02005 listesini içe aktarın veya manuel ekleyin</p>
   </div>
   <div class="page-toolbar__actions">
+    <button type="button" class="btn btn--secondary" id="btn-export-pdf-students">PDF İndir</button>
     <button type="button" class="btn btn--secondary" id="btn-import-students">Excel'den İçe Aktar</button>
     <button type="button" class="btn btn--primary" id="btn-add-student">Öğrenci Ekle</button>
   </div>
@@ -50,9 +51,9 @@
           </td>
           <td><span class="badge"><%= s.className %></span></td>
           <td class="col-actions">
-            <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/students/<%= s.id %>" aria-label="PDF indir" title="PDF indir">⬇</button>
-            <button type="button" class="btn btn--secondary btn--icon" data-action="edit" aria-label="Düzenle" title="Düzenle">✎</button>
-            <button type="button" class="btn btn--secondary btn--icon" data-action="delete" aria-label="Sil" title="Sil">✕</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/students/<%= s.id %>" aria-label="PDF indir" data-tooltip="PDF indir">⬇</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="edit" aria-label="Düzenle" data-tooltip="Düzenle">✎</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="delete" aria-label="Sil" data-tooltip="Sil">✕</button>
           </td>
         </tr>
       <% }); %>

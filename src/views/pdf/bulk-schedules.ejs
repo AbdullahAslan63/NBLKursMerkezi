@@ -26,7 +26,7 @@
           <% } %>
         </header>
 
-        <%- include('_schedule-grid', { days, timeSlots, cellMap: page.cellMap }) %>
+        <%- include('_schedule-grid', { days, timeSlots: page.timeSlots, cellMap: page.cellMap }) %>
 
         <footer class="pdf-footer">Oluşturulma: <%= generatedAt %></footer>
       </div>

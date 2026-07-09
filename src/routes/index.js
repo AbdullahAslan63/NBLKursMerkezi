@@ -15,7 +15,7 @@ export function createIndexHandler(prisma) {
             dayOfWeek: true,
             startTime: true,
             endTime: true,
-            teacher: { select: { name: true } },
+            teacher: { select: { name: true, subject: true } },
             _count: { select: { students: true } },
           },
           orderBy: { id: 'asc' },
@@ -33,6 +33,7 @@ export function createIndexHandler(prisma) {
           startTime: session.startTime,
           endTime: session.endTime,
           teacherName: session.teacher.name,
+          teacherSubject: session.teacher.subject,
           studentCount: session._count.students,
         });
       }

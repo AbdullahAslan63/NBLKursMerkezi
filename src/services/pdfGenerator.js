@@ -42,11 +42,12 @@ export async function htmlToPdfBuffer(html) {
   const page = await browser.newPage();
   try {
     await page.setContent(html, { waitUntil: 'networkidle0' });
-    return await page.pdf({
+    const buffer = await page.pdf({
       format: 'A4',
       printBackground: true,
       margin: { top: '12mm', right: '10mm', bottom: '12mm', left: '10mm' },
     });
+    return Buffer.from(buffer);
   } finally {
     await page.close();
   }

@@ -1,6 +1,11 @@
-<div class="page-header">
-  <h1>Haftalık Etüt Programı</h1>
-  <p>Pazartesi – Pazar, tekrarlayan program</p>
+<div class="page-header page-toolbar">
+  <div>
+    <h1>Haftalık Etüt Programı</h1>
+    <p>Pazartesi – Pazar, tekrarlayan program</p>
+  </div>
+  <div class="page-toolbar__actions">
+    <button type="button" class="btn btn--secondary" id="btn-export-master-pdf">Genel Programı İndir</button>
+  </div>
 </div>
 
 <div class="stats-pills" aria-label="Özet istatistikler">
@@ -54,6 +59,10 @@
         </div>
         <h3 class="agenda-empty-state__title">Planlanmış Etüt Yok</h3>
         <p class="agenda-empty-state__text">Bu gün için planlanmış herhangi bir etüt bulunmuyor.</p>
+        <button type="button" class="btn btn--primary btn--center-add" style="margin-top: var(--space-4);" data-action="center-add-session">
+          <i data-lucide="plus" class="btn--center-add__icon"></i>
+          <span>Yeni Etüt Ekle</span>
+        </button>
       </div>
     <% } else { %>
       <div class="agenda-timeline-container">
@@ -86,7 +95,7 @@
 <% }); %>
 
 <%# ── Floating Action Button (FAB) ── %>
-<button type="button" class="fab-btn" id="fab-add-session" aria-label="Yeni Etüt Ekle" title="Yeni Etüt Ekle">
+<button type="button" class="fab-btn" id="fab-add-session" aria-label="Yeni Etüt Ekle" data-tooltip="Yeni Etüt Ekle">
   <i data-lucide="plus" class="fab-btn__icon"></i>
 </button>
 

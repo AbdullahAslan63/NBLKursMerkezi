@@ -3,22 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-}
-
-enum DayOfWeek {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
+  provider = "sqlite"
 }
 
 model Teacher {
   id            Int            @id @default(autoincrement())
   name          String
+  subject       String         @default("")
   createdAt     DateTime       @default(now())
   studySessions StudySession[]
 }
@@ -44,7 +35,7 @@ model Student {
 
 model StudySession {
   id        Int                   @id @default(autoincrement())
-  dayOfWeek DayOfWeek
+  dayOfWeek String
   startTime String
   endTime   String
   teacherId Int

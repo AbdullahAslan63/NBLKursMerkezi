@@ -1,5 +1,6 @@
 import { apiJson } from './api.js';
 import { showToast, showConfirm } from './ui.js';
+import { exportMasterSchedulePdf } from './listPdfExport.js';
 
 /* ── DOM referansları ── */
 const modal = document.getElementById('schedule-modal');
@@ -28,6 +29,7 @@ function switchDay(dayKey) {
   });
 
   activeDayKey = dayKey;
+  updateFabState();
 }
 
 daySelector?.addEventListener('click', (e) => {
@@ -596,11 +598,23 @@ document.querySelectorAll('.day-timeline').forEach((timeline) => {
   });
 });
 
-/* ── Floating Action Button (FAB) Tıklama Dinleyicisi ── */
-const fabBtn = document.getElementById('fab-add-session');
-fabBtn?.addEventListener('click', () => {
+/* ── Floating Action Button (FAB) & Center Add Button Gösterim Mantığı ── */
+function updateFabState() {
+  const activeTimeline = document.querySelector('.day-timeline.day-timeline--active');
+  const isEmpty = activeTimeline && activeTimeline.querySelector('.agenda-empty-state') !== null;
+  const fab = document.getElementById('fab-add-session');
+  if (fab) {
+    if (isEmpty) {
+      fab.classList.add('fab-btn--hidden');
+    } else {
+      fab.classList.remove('fab-btn--hidden');
+    }
+  }
+}
+
+/* ── Yeni Etüt Ekleme Modali Açıcı ── */
+function openAddSessionModal() {
   editingSessionId = null;
-  // Mock trigger to load the modal for the active day with a default time range
   const triggerMock = {
     dataset: {
       day: activeDayKey,
@@ -612,6 +626,22 @@ fabBtn?.addEventListener('click', () => {
   loadPanel(triggerMock).catch((err) => {
     showToast(err.message || 'Panel açılamadı.', 'error');
   });
+}
+
+const fabBtn = document.getElementById('fab-add-session');
+fabBtn?.addEventListener('click', openAddSessionModal);
+
+// Center add buttons inside empty states
+document.querySelectorAll('[data-action="center-add-session"]').forEach((btn) => {
+  btn.addEventListener('click', openAddSessionModal);
+});
+
+// İlk yüklemede FAB durumunu ayarla
+updateFabState();
+
+// Genel program PDF dışa aktarma butonu dinleyicisi
+document.getElementById('btn-export-master-pdf')?.addEventListener('click', (e) => {
+  exportMasterSchedulePdf({ triggerBtn: e.currentTarget });
 });
 
 /* ── Lucide ikonlarını yeniden render et ── */

@@ -50,6 +50,7 @@ enum DayOfWeek {
 model Teacher {
   id            Int            @id @default(autoincrement())
   name          String
+  subject       String         @default("")
   createdAt     DateTime       @default(now())
   studySessions StudySession[]
 }

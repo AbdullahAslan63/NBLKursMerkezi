@@ -14,7 +14,7 @@
   data-start="<%= startTime %>"
   data-end="<%= endTime %>"
   data-session-count="<%= count %>"
-  title="<%= isFilled ? count + ' etüt' : 'Etüt ekle' %>"
+  data-tooltip="<%= isFilled ? count + ' etüt' : 'Etüt ekle' %>"
 >
   <% if (isFilled) { %>
     <span class="badge badge--filled schedule-cell__badge"><%= count %> öğrt.</span>

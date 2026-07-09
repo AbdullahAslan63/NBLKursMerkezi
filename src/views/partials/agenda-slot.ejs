@@ -32,6 +32,9 @@
         aria-label="<%= session.teacherName %> — <%= session.studentCount %> öğrenci"
       >
         <div class="timeline-card__body">
+          <span class="timeline-card__subject">
+            <%= session.teacherSubject || 'Ders Belirtilmemiş' %>
+          </span>
           <span class="timeline-card__teacher">
             <i data-lucide="graduation-cap" class="timeline-card__teacher-icon"></i>
             <%= session.teacherName %>

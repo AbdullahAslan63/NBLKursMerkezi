@@ -3,7 +3,10 @@
     <h1>Öğretmenler</h1>
     <p>Etüt programına atanacak öğretmenleri yönetin</p>
   </div>
-  <button type="button" class="btn btn--primary" id="btn-add-teacher">Öğretmen Ekle</button>
+  <div class="page-toolbar__actions">
+    <button type="button" class="btn btn--secondary" id="btn-export-pdf-teachers">PDF İndir</button>
+    <button type="button" class="btn btn--primary" id="btn-add-teacher">Öğretmen Ekle</button>
+  </div>
 </div>
 
 <div class="search-box page-search">
@@ -21,19 +24,21 @@
     <thead>
       <tr>
         <th>Ad</th>
+        <th>Branş</th>
         <th>Etüt</th>
         <th class="col-actions">İşlem</th>
       </tr>
     </thead>
     <tbody id="teachers-tbody">
       <% teachers.forEach(function(t) { %>
-        <tr data-id="<%= t.id %>" data-name="<%= t.name %>" data-search="<%= t.name.toLowerCase() %>">
+        <tr data-id="<%= t.id %>" data-name="<%= t.name %>" data-subject="<%= t.subject %>" data-search="<%= (t.name + ' ' + (t.subject || '')).toLowerCase() %>">
           <td><%= t.name %></td>
+          <td><span class="badge badge--subject"><%= t.subject || 'Belirtilmemiş' %></span></td>
           <td><span class="badge"><%= t.sessionCount %> etüt</span></td>
           <td class="col-actions">
-            <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/teachers/<%= t.id %>" aria-label="PDF indir" title="PDF indir">⬇</button>
-            <button type="button" class="btn btn--secondary btn--icon" data-action="edit" aria-label="Düzenle" title="Düzenle">✎</button>
-            <button type="button" class="btn btn--secondary btn--icon" data-action="delete" aria-label="Sil" title="Sil">✕</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/teachers/<%= t.id %>" aria-label="PDF indir" data-tooltip="PDF indir">⬇</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="edit" aria-label="Düzenle" data-tooltip="Düzenle">✎</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="delete" aria-label="Sil" data-tooltip="Sil">✕</button>
           </td>
         </tr>
       <% }); %>
@@ -48,6 +53,10 @@
       <label for="teacher-name">Ad Soyad</label>
       <input type="text" id="teacher-name" name="name" required autocomplete="off">
       <p class="form-field__error" id="teacher-name-error" hidden></p>
+    </div>
+    <div class="form-field">
+      <label for="teacher-subject">Branş / Ders</label>
+      <input type="text" id="teacher-subject" name="subject" autocomplete="off" placeholder="örn. Matematik, Fizik">
     </div>
     <div class="form-modal__actions">
       <button type="button" class="btn btn--secondary" data-action="cancel">İptal</button>

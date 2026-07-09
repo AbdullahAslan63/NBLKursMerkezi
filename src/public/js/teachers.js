@@ -1,5 +1,6 @@
 import { apiJson } from './api.js';
 import { showToast, showConfirm } from './ui.js';
+import { exportListPdf } from './listPdfExport.js';
 
 const tbody = document.getElementById('teachers-tbody');
 const emptyEl = document.getElementById('teachers-empty');
@@ -10,6 +11,7 @@ const form = document.getElementById('teacher-form');
 const nameInput = document.getElementById('teacher-name');
 const modalTitle = document.getElementById('teacher-modal-title');
 const nameError = document.getElementById('teacher-name-error');
+const subjectInput = document.getElementById('teacher-subject');
 
 let editingId = null;
 
@@ -33,6 +35,7 @@ function openModal(teacher = null) {
   editingId = teacher?.id ?? null;
   modalTitle.textContent = teacher ? 'Öğretmen Düzenle' : 'Öğretmen Ekle';
   nameInput.value = teacher?.name ?? '';
+  if (subjectInput) subjectInput.value = teacher?.subject ?? '';
   nameError.hidden = true;
   nameInput.classList.remove('is-invalid');
   modal.showModal();
@@ -49,9 +52,11 @@ function appendRow(teacher) {
   const tr = document.createElement('tr');
   tr.dataset.id = teacher.id;
   tr.dataset.name = teacher.name;
-  tr.dataset.search = teacher.name.toLowerCase();
+  tr.dataset.subject = teacher.subject || '';
+  tr.dataset.search = `${teacher.name} ${teacher.subject || ''}`.toLowerCase();
   tr.innerHTML = `
     <td>${escapeHtml(teacher.name)}</td>
+    <td><span class="badge badge--subject">${escapeHtml(teacher.subject || 'Belirtilmemiş')}</span></td>
     <td><span class="badge">0 etüt</span></td>
     <td class="col-actions">
       <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/teachers/${teacher.id}" aria-label="PDF indir" title="PDF indir">⬇</button>
@@ -77,6 +82,7 @@ form.querySelector('[data-action="cancel"]')?.addEventListener('click', closeMod
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = nameInput.value.trim();
+  const subject = subjectInput ? subjectInput.value.trim() : '';
   if (!name) {
     nameError.textContent = 'Öğretmen adı zorunludur.';
     nameError.hidden = false;
@@ -85,7 +91,7 @@ form.addEventListener('submit', async (e) => {
   }
 
   try {
-    const payload = { name };
+    const payload = { name, subject };
     const result = editingId
       ? await apiJson(`/teachers/${editingId}`, { method: 'PUT', body: payload })
       : await apiJson('/teachers', { method: 'POST', body: payload });
@@ -95,8 +101,11 @@ form.addEventListener('submit', async (e) => {
       const row = tbody.querySelector(`tr[data-id="${editingId}"]`);
       if (row) {
         row.dataset.name = teacher.name;
-        row.dataset.search = teacher.name.toLowerCase();
-        row.querySelector('td').textContent = teacher.name;
+        row.dataset.subject = teacher.subject || '';
+        row.dataset.search = `${teacher.name} ${teacher.subject || ''}`.toLowerCase();
+        row.querySelectorAll('td')[0].textContent = teacher.name;
+        const subjBadge = row.querySelectorAll('td')[1].querySelector('.badge--subject');
+        if (subjBadge) subjBadge.textContent = teacher.subject || 'Belirtilmemiş';
       }
       showToast(result.message || 'Öğretmen güncellendi.');
     } else {
@@ -118,7 +127,11 @@ tbody.addEventListener('click', async (e) => {
   const name = row.dataset.name;
 
   if (btn.dataset.action === 'edit') {
-    openModal({ id: Number(id), name });
+    openModal({
+      id: Number(id),
+      name,
+      subject: row.dataset.subject || ''
+    });
     return;
   }
 
@@ -144,4 +157,16 @@ let searchTimer;
 searchInput?.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(filterRows, 200);
+});
+
+/* PDF Liste Dışa Aktarma */
+document.getElementById('btn-export-pdf-teachers')?.addEventListener('click', (e) => {
+  const today = new Date().toISOString().slice(0, 10);
+  exportListPdf({
+    title: 'Öğretmen Listesi',
+    filename: `Ogretmenler_Listesi_${today}.pdf`,
+    tbodyId: 'teachers-tbody',
+    colIndices: [0, 1, 2], // Ad, Branş, Etüt — İşlem sütunu hariç
+    triggerBtn: e.currentTarget,
+  });
 });
