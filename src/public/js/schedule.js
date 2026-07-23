@@ -493,9 +493,28 @@ function bindPanelEvents() {
     const teacherInput = form.querySelector('input[name="teacherId"]:checked');
     const studentInputs = [...form.querySelectorAll('input[name="studentIds"]:checked')];
 
-    // Form üzerindeki zaman picker değerlerini oku
     const startTimeInput = form.querySelector('#session-start-time');
     const endTimeInput = form.querySelector('#session-end-time');
+
+    const startVal = startTimeInput ? startTimeInput.value : container.dataset.start;
+    const endVal = endTimeInput ? endTimeInput.value : container.dataset.end;
+
+    if (startVal && endVal) {
+      const [sh, sm] = startVal.split(':').map(Number);
+      const [eh, em] = endVal.split(':').map(Number);
+      const startMins = sh * 60 + sm;
+      const endMins = eh * 60 + em;
+
+      if (startMins >= endMins) {
+        if (errorEl) {
+          errorEl.textContent = 'Başlangıç saati, bitiş saatinden sonra veya aynı olamaz!';
+          errorEl.hidden = false;
+        } else {
+          showToast('Başlangıç saati, bitiş saatinden sonra veya aynı olamaz!', 'error');
+        }
+        return;
+      }
+    }
 
     if (!teacherInput) {
       if (errorEl) {

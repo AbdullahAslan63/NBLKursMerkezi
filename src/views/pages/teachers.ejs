@@ -55,8 +55,26 @@
       <p class="form-field__error" id="teacher-name-error" hidden></p>
     </div>
     <div class="form-field">
-      <label for="teacher-subject">Branş / Ders</label>
-      <input type="text" id="teacher-subject" name="subject" autocomplete="off" placeholder="örn. Matematik, Fizik">
+      <label for="teacher-subject-select">Branş / Ders</label>
+      <select id="teacher-subject-select" name="subjectSelect">
+        <option value="">Seçiniz...</option>
+        <option value="Matematik">Matematik</option>
+        <option value="Geometri">Geometri</option>
+        <option value="Fizik">Fizik</option>
+        <option value="Kimya">Kimya</option>
+        <option value="Biyoloji">Biyoloji</option>
+        <option value="Türkçe">Türkçe</option>
+        <option value="Edebiyat">Edebiyat</option>
+        <option value="Tarih">Tarih</option>
+        <option value="Coğrafya">Coğrafya</option>
+        <option value="Felsefe">Felsefe</option>
+        <option value="Din Kültürü">Din Kültürü</option>
+        <option value="İngilizce">İngilizce</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="teacher-subject" style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: normal; margin-top: 4px;">Listede yoksa yeni branş adı girin:</label>
+      <input type="text" id="teacher-subject" name="subject" autocomplete="off" placeholder="örn. Bilişim">
     </div>
     <div class="form-modal__actions">
       <button type="button" class="btn btn--secondary" data-action="cancel">İptal</button>

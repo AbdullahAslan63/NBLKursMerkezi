@@ -364,7 +364,7 @@ function ensureLibrariesLoaded() {
   _libPromise = new Promise((resolve, reject) => {
     // 1. jsPDF
     const jspdfScript = document.createElement('script');
-    jspdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+    jspdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
     jspdfScript.onload = () => {
       // Set global jsPDF for plugins
       window.jsPDF = window.jspdf.jsPDF;
@@ -373,10 +373,16 @@ function ensureLibrariesLoaded() {
       const atScript = document.createElement('script');
       atScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js';
       atScript.onload = () => resolve();
-      atScript.onerror = () => reject(new Error('jspdf-autotable yüklenemedi'));
+      atScript.onerror = () => {
+        _libPromise = null; // Yeniden deneme için temizle
+        reject(new Error('jspdf-autotable yüklenemedi'));
+      };
       document.head.appendChild(atScript);
     };
-    jspdfScript.onerror = () => reject(new Error('jsPDF yüklenemedi'));
+    jspdfScript.onerror = () => {
+      _libPromise = null; // Yeniden deneme için temizle
+      reject(new Error('jsPDF yüklenemedi'));
+    };
     document.head.appendChild(jspdfScript);
   });
 

@@ -72,9 +72,12 @@ img {
 
 /* Navbar */
 .navbar {
-  background: var(--color-primary);
+  background: var(--color-navbar-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   position: sticky;
   top: 0;
   z-index: 100;

@@ -12,6 +12,7 @@ const nameInput = document.getElementById('teacher-name');
 const modalTitle = document.getElementById('teacher-modal-title');
 const nameError = document.getElementById('teacher-name-error');
 const subjectInput = document.getElementById('teacher-subject');
+const subjectSelect = document.getElementById('teacher-subject-select');
 
 let editingId = null;
 
@@ -35,7 +36,19 @@ function openModal(teacher = null) {
   editingId = teacher?.id ?? null;
   modalTitle.textContent = teacher ? 'Öğretmen Düzenle' : 'Öğretmen Ekle';
   nameInput.value = teacher?.name ?? '';
-  if (subjectInput) subjectInput.value = teacher?.subject ?? '';
+  
+  if (subjectSelect) subjectSelect.value = '';
+  if (subjectInput) subjectInput.value = '';
+
+  if (teacher && teacher.subject) {
+    const isStandard = Array.from(subjectSelect?.options || []).some(opt => opt.value === teacher.subject);
+    if (isStandard) {
+      if (subjectSelect) subjectSelect.value = teacher.subject;
+    } else {
+      if (subjectInput) subjectInput.value = teacher.subject;
+    }
+  }
+
   nameError.hidden = true;
   nameInput.classList.remove('is-invalid');
   modal.showModal();
@@ -82,7 +95,9 @@ form.querySelector('[data-action="cancel"]')?.addEventListener('click', closeMod
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = nameInput.value.trim();
-  const subject = subjectInput ? subjectInput.value.trim() : '';
+  const customSubj = subjectInput ? subjectInput.value.trim() : '';
+  const selectedSubj = subjectSelect ? subjectSelect.value.trim() : '';
+  const subject = customSubj || selectedSubj;
   if (!name) {
     nameError.textContent = 'Öğretmen adı zorunludur.';
     nameError.hidden = false;

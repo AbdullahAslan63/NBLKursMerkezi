@@ -517,6 +517,8 @@
   max-width: 480px;
   width: calc(100% - var(--space-6));
   box-shadow: var(--shadow-md);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .form-modal::backdrop {
