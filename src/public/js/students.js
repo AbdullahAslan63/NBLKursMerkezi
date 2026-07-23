@@ -1,6 +1,7 @@
 import { apiJson, apiFormData } from './api.js';
 import { showToast, showConfirm } from './ui.js';
 import { exportListPdf } from './listPdfExport.js';
+import { downloadPdf } from './pdf.js';
 
 const tbody = document.getElementById('students-tbody');
 const emptyEl = document.getElementById('students-empty');
@@ -220,10 +221,26 @@ form.addEventListener('submit', async (e) => {
       return;
     }
 
+    const studentNumber = document.getElementById('student-number').value.trim();
+    const firstName = document.getElementById('student-first').value.trim();
+    const lastName = document.getElementById('student-last').value.trim();
+
+    if (!studentNumber || !firstName || !lastName) {
+      formError.textContent = 'Öğrenci numarası, ad ve soyad zorunludur.';
+      formError.hidden = false;
+      return;
+    }
+
+    if (!/^\d+$/.test(studentNumber)) {
+      formError.textContent = 'Öğrenci numarası sadece rakamlardan oluşmalıdır.';
+      formError.hidden = false;
+      return;
+    }
+
     const payload = {
-      studentNumber: document.getElementById('student-number').value.trim(),
-      firstName: document.getElementById('student-first').value.trim(),
-      lastName: document.getElementById('student-last').value.trim(),
+      studentNumber,
+      firstName,
+      lastName,
       classId,
     };
 
@@ -253,6 +270,13 @@ tbody.addEventListener('click', async (e) => {
   if (!btn) return;
   const row = btn.closest('tr');
   const id = row.dataset.id;
+
+  if (btn.dataset.action === 'download-pdf') {
+    e.preventDefault();
+    e.stopPropagation();
+    openPdfDateModal(btn.dataset.pdfUrl, btn);
+    return;
+  }
 
   if (btn.dataset.action === 'edit') {
     openModal({
@@ -485,14 +509,44 @@ importForm?.addEventListener('submit', async (e) => {
 // Dynamic Class Chips Initial Load
 renderClassFilterChips();
 
-/* PDF Liste Dışa Aktarma */
+/* PDF Date Modal ve İndirme Mantığı */
+const pdfDateModal = document.getElementById('pdf-date-modal');
+const pdfDateForm = document.getElementById('pdf-date-form');
+let currentPdfUrl = '';
+let currentPdfTrigger = null;
+
+function openPdfDateModal(url, trigger) {
+  currentPdfUrl = url;
+  currentPdfTrigger = trigger;
+  
+  const monthSelect = document.getElementById('pdf-month-select');
+  if (monthSelect) {
+    monthSelect.value = "9"; // default to Eylül (9)
+  }
+  
+  const weekSelect = document.getElementById('pdf-week-select');
+  if (weekSelect) {
+    weekSelect.value = "1";
+  }
+
+  pdfDateModal.showModal();
+}
+
+pdfDateModal?.querySelector('[data-action="cancel-pdf"]')?.addEventListener('click', () => {
+  pdfDateModal.close();
+});
+
+pdfDateForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const month = document.getElementById('pdf-month-select').value;
+  const week = document.getElementById('pdf-week-select').value;
+  pdfDateModal.close();
+
+  const url = `${currentPdfUrl}?month=${month}&week=${week}`;
+  await downloadPdf(url, { trigger: currentPdfTrigger });
+});
+
 document.getElementById('btn-export-pdf-students')?.addEventListener('click', (e) => {
-  const today = new Date().toISOString().slice(0, 10);
-  exportListPdf({
-    title: 'Öğrenci Listesi',
-    filename: `Ogrenciler_Listesi_${today}.pdf`,
-    tbodyId: 'students-tbody',
-    colIndices: [0, 1], // Öğrenci, Sınıf — İşlem sütunu hariç
-    triggerBtn: e.currentTarget,
-  });
+  e.preventDefault();
+  openPdfDateModal('/pdf/students/all', e.currentTarget);
 });

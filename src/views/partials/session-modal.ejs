@@ -1,51 +1,62 @@
 <div
-  class="session-modal"
+  class="session-modal<%= (typeof isGlobalAdd !== 'undefined' && isGlobalAdd) ? ' session-modal--create' : '' %>"
   data-day="<%= dayOfWeek %>"
   data-start="<%= startTime %>"
   data-end="<%= endTime %>"
 >
-  <h2 class="session-modal__title"><%= dayLabel %> · <%= timeLabel %></h2>
+  <% if (typeof isGlobalAdd !== 'undefined' && isGlobalAdd) { %>
+    <h2 class="session-modal__title">Yeni Etüt Ekle</h2>
+  <% } else { %>
+    <h2 class="session-modal__title"><%= dayLabel %> · <%= timeLabel %></h2>
 
-  <section class="session-modal__section" aria-label="Mevcut etütler">
-    <h3 class="session-modal__subtitle">Mevcut Etütler</h3>
-    <% if (!sessions || sessions.length === 0) { %>
-      <p class="session-modal__empty">Bu saatte henüz etüt yok.</p>
-    <% } else { %>
-      <ul class="session-list">
-        <% sessions.forEach(function(session) { %>
-          <li
-            class="session-list__item"
-            data-session-id="<%= session.id %>"
-            data-teacher-id="<%= session.teacherId %>"
-            data-student-ids="<%= session.studentIds.join(',') %>"
-          >
-            <span><%= session.teacherName %> — <%= session.studentCount %> öğrenci</span>
-            <span class="session-list__actions">
-              <button
-                type="button"
-                class="btn btn--secondary btn--icon"
-                data-action="edit-session"
-                aria-label="Düzenle"
-                data-tooltip="Düzenle"
-              >✎</button>
-              <button
-                type="button"
-                class="btn btn--secondary btn--icon"
-                data-action="delete-session"
-                data-session-id="<%= session.id %>"
-                aria-label="Sil"
-                data-tooltip="Sil"
-              >✕</button>
-            </span>
-          </li>
-        <% }); %>
-      </ul>
-    <% } %>
-  </section>
+    <section class="session-modal__section" aria-label="Mevcut etütler">
+      <h3 class="session-modal__subtitle">Mevcut Etütler</h3>
+      <% if (!sessions || sessions.length === 0) { %>
+        <p class="session-modal__empty">Bu saatte henüz etüt yok.</p>
+      <% } else { %>
+        <ul class="session-list">
+          <% sessions.forEach(function(session) { %>
+            <li
+              class="session-list__item"
+              data-session-id="<%= session.id %>"
+              data-teacher-id="<%= session.teacherId %>"
+              data-student-ids="<%= session.studentIds.join(',') %>"
+              data-start="<%= session.startTime %>"
+              data-end="<%= session.endTime %>"
+              data-day="<%= dayOfWeek %>"
+            >
+              <span><%= session.teacherName %> — <%= session.studentCount %> öğrenci</span>
+              <span class="session-list__actions">
+                <button
+                  type="button"
+                  class="btn btn--secondary btn--icon"
+                  data-action="edit-session"
+                  aria-label="Düzenle"
+                  data-tooltip="Düzenle"
+                >✎</button>
+                <button
+                  type="button"
+                  class="btn btn--secondary btn--icon"
+                  data-action="delete-session"
+                  data-session-id="<%= session.id %>"
+                  aria-label="Sil"
+                  data-tooltip="Sil"
+                >✕</button>
+              </span>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </section>
+  <% } %>
 
   <section class="session-modal__section" aria-label="Etüt formu">
     <div class="session-modal__form-header">
-      <h3 class="session-modal__subtitle" id="session-form-title">Yeni Etüt Ekle</h3>
+      <% if (typeof isGlobalAdd !== 'undefined' && isGlobalAdd) { %>
+        <h3 class="session-modal__subtitle" id="session-form-title" style="display: none;">Yeni Etüt Ekle</h3>
+      <% } else { %>
+        <h3 class="session-modal__subtitle" id="session-form-title">Yeni Etüt Ekle</h3>
+      <% } %>
       <div class="wizard-progress" aria-hidden="true">
         <span class="wizard-progress__dot wizard-progress__dot--active" data-step-indicator="1">1</span>
         <span class="wizard-progress__line"></span>
@@ -180,9 +191,6 @@
               <% }); %>
             </div>
           </div>
-          <div class="wizard-actions">
-            <button type="button" class="btn btn--primary" data-action="next-step" disabled>Sonraki Adım</button>
-          </div>
         </div>
 
         <!-- Step 2: Select Students -->
@@ -194,11 +202,6 @@
             <div class="student-search-box">
               <i class="student-search-box__icon" data-lucide="search"></i>
               <input type="text" id="student-search-input" placeholder="Öğrenci adı veya numarası ara..." autocomplete="off">
-            </div>
-
-            <!-- Chips Container -->
-            <div class="selected-chips" id="selected-chips-container" aria-label="Seçilen öğrenciler">
-              <!-- Dynamically populated chips -->
             </div>
 
             <!-- Student Selection List -->
@@ -217,11 +220,30 @@
           </div>
 
           <p class="form-field__error" id="session-form-error" hidden></p>
+        </div>
 
-          <div class="wizard-actions">
+        <!-- Dedicated Selected Students Section (Visible clearly at the bottom) -->
+        <div class="selected-students-summary-section" id="selected-students-summary-wrap">
+          <span class="selected-students-summary-label">Seçilen Öğrenciler</span>
+          <span class="no-students-placeholder">Henüz öğrenci seçilmedi.</span>
+          <div class="selected-chips" id="selected-chips-container" aria-label="Seçilen öğrenciler">
+            <!-- Dynamically populated chips -->
+          </div>
+        </div>
+
+        <!-- Unified bottom action alignment strictly anchored at the bottom -->
+        <div class="session-modal-footer">
+          <!-- Step 1 Actions -->
+          <div class="wizard-footer-actions" data-step-actions="1">
+            <button type="button" class="btn btn--primary btn--full" data-action="next-step" disabled>Sonraki Adım</button>
+          </div>
+          
+          <!-- Step 2 Actions -->
+          <div class="wizard-footer-actions" data-step-actions="2" style="display: none;">
             <button type="button" class="btn btn--secondary" data-action="prev-step">Geri</button>
             <div class="wizard-actions__right">
               <button type="button" class="btn btn--secondary" id="session-form-cancel-edit" hidden>İptal</button>
+              <button type="button" class="btn btn--danger" id="session-form-delete-btn" hidden>Sil</button>
               <button type="submit" class="btn btn--primary" id="session-form-submit">Etüt Kaydet</button>
             </div>
           </div>

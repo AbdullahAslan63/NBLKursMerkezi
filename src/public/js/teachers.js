@@ -1,6 +1,7 @@
 import { apiJson } from './api.js';
 import { showToast, showConfirm } from './ui.js';
 import { exportListPdf } from './listPdfExport.js';
+import { downloadPdf } from './pdf.js';
 
 const tbody = document.getElementById('teachers-tbody');
 const emptyEl = document.getElementById('teachers-empty');
@@ -141,6 +142,13 @@ tbody.addEventListener('click', async (e) => {
   const id = row.dataset.id;
   const name = row.dataset.name;
 
+  if (btn.dataset.action === 'download-pdf') {
+    e.preventDefault();
+    e.stopPropagation();
+    openPdfDateModal(btn.dataset.pdfUrl, btn);
+    return;
+  }
+
   if (btn.dataset.action === 'edit') {
     openModal({
       id: Number(id),
@@ -174,14 +182,44 @@ searchInput?.addEventListener('input', () => {
   searchTimer = setTimeout(filterRows, 200);
 });
 
-/* PDF Liste Dışa Aktarma */
+/* PDF Date Modal ve İndirme Mantığı */
+const pdfDateModal = document.getElementById('pdf-date-modal');
+const pdfDateForm = document.getElementById('pdf-date-form');
+let currentPdfUrl = '';
+let currentPdfTrigger = null;
+
+function openPdfDateModal(url, trigger) {
+  currentPdfUrl = url;
+  currentPdfTrigger = trigger;
+  
+  const monthSelect = document.getElementById('pdf-month-select');
+  if (monthSelect) {
+    monthSelect.value = "9"; // default to Eylül (9)
+  }
+  
+  const weekSelect = document.getElementById('pdf-week-select');
+  if (weekSelect) {
+    weekSelect.value = "1";
+  }
+
+  pdfDateModal.showModal();
+}
+
+pdfDateModal?.querySelector('[data-action="cancel-pdf"]')?.addEventListener('click', () => {
+  pdfDateModal.close();
+});
+
+pdfDateForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const month = document.getElementById('pdf-month-select').value;
+  const week = document.getElementById('pdf-week-select').value;
+  pdfDateModal.close();
+
+  const url = `${currentPdfUrl}?month=${month}&week=${week}`;
+  await downloadPdf(url, { trigger: currentPdfTrigger });
+});
+
 document.getElementById('btn-export-pdf-teachers')?.addEventListener('click', (e) => {
-  const today = new Date().toISOString().slice(0, 10);
-  exportListPdf({
-    title: 'Öğretmen Listesi',
-    filename: `Ogretmenler_Listesi_${today}.pdf`,
-    tbodyId: 'teachers-tbody',
-    colIndices: [0, 1, 2], // Ad, Branş, Etüt — İşlem sütunu hariç
-    triggerBtn: e.currentTarget,
-  });
+  e.preventDefault();
+  openPdfDateModal('/pdf/teachers/all', e.currentTarget);
 });

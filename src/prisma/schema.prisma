@@ -34,14 +34,17 @@ model Student {
 }
 
 model StudySession {
-  id        Int                   @id @default(autoincrement())
-  dayOfWeek String
-  startTime String
-  endTime   String
-  teacherId Int
-  teacher   Teacher               @relation(fields: [teacherId], references: [id])
-  students  StudySessionStudent[]
-  createdAt DateTime              @default(now())
+  id         Int                   @id @default(autoincrement())
+  dayOfWeek  String
+  startTime  String
+  endTime    String
+  month      Int                   @default(9)
+  weekNumber Int                   @default(1)
+  date       String                @default("")
+  teacherId  Int
+  teacher    Teacher               @relation(fields: [teacherId], references: [id])
+  students   StudySessionStudent[]
+  createdAt  DateTime              @default(now())
 }
 
 model StudySessionStudent {
@@ -51,4 +54,10 @@ model StudySessionStudent {
   student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@id([studySessionId, studentId])
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
 }

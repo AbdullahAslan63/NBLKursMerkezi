@@ -17,13 +17,13 @@
 <!-- Dynamic Class Filter Chips -->
 <div class="filter-chips-row" id="class-filter-chips"></div>
 
-<div id="students-empty" class="empty-state card" style="<%= students.length ? 'display:none' : '' %>">
+<div id="students-empty" class="empty-state card" <% if (students.length) { %>style="display: none;"<% } %>>
   <h2>Henüz öğrenci yok</h2>
   <p>Manuel ekleyin veya önce bir sınıf oluşturup öğrenci kaydı yapın.</p>
   <button type="button" class="btn btn--primary" data-action="add-student">Öğrenci Ekle</button>
 </div>
 
-<div id="students-table-wrap" style="<%= students.length ? '' : 'display:none' %>">
+<div id="students-table-wrap" <% if (!students.length) { %>style="display: none;"<% } %>>
   <table class="data-table" id="students-table">
     <thead>
       <tr>
@@ -123,6 +123,47 @@
     <div class="form-modal__actions">
       <button type="button" class="btn btn--secondary" data-action="cancel-import">İptal</button>
       <button type="submit" class="btn btn--primary" id="btn-do-import">İçe Aktar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="pdf-date-modal" class="form-modal">
+  <form id="pdf-date-form" method="dialog">
+    <h2 style="margin: 0 0 var(--space-2); font-size: 1.25rem;">Program Dönemi Seçin</h2>
+    <p style="margin-bottom: var(--space-4); font-size: 0.875rem; color: var(--color-text-muted);">PDF çıktısı için ay ve hafta seçin:</p>
+    
+    <div class="form-field">
+      <label for="pdf-month-select">Ay</label>
+      <select id="pdf-month-select" name="month" class="form-select" style="width: 100%; padding: var(--space-2); border-radius: var(--radius-md); border: 1px solid var(--color-border); font-family: inherit;">
+        <option value="9">Eylül</option>
+        <option value="10">Ekim</option>
+        <option value="11">Kasım</option>
+        <option value="12">Aralık</option>
+        <option value="1">Ocak</option>
+        <option value="2">Şubat</option>
+        <option value="3">Mart</option>
+        <option value="4">Nisan</option>
+        <option value="5">Mayıs</option>
+        <option value="6">Haziran</option>
+        <option value="7">Temmuz</option>
+        <option value="8">Ağustos</option>
+      </select>
+    </div>
+    
+    <div class="form-field" style="margin-top: var(--space-3);">
+      <label for="pdf-week-select">Hafta</label>
+      <select id="pdf-week-select" name="week" class="form-select" style="width: 100%; padding: var(--space-2); border-radius: var(--radius-md); border: 1px solid var(--color-border); font-family: inherit;">
+        <option value="1">1. Hafta</option>
+        <option value="2">2. Hafta</option>
+        <option value="3">3. Hafta</option>
+        <option value="4">4. Hafta</option>
+        <option value="5">5. Hafta</option>
+      </select>
+    </div>
+    
+    <div class="form-modal__actions" style="margin-top: var(--space-5); display: flex; justify-content: flex-end; gap: var(--space-2);">
+      <button type="button" class="btn btn--secondary" data-action="cancel-pdf">İptal</button>
+      <button type="submit" class="btn btn--primary" id="btn-submit-pdf">İndir</button>
     </div>
   </form>
 </dialog>

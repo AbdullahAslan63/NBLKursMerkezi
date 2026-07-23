@@ -71,6 +71,13 @@ export default function createStudentsRouter(prisma) {
         });
       }
 
+      if (!/^\d+$/.test(studentNumber)) {
+        return res.fail('VALIDATION_ERROR', 'Öğrenci numarası sadece rakamlardan oluşmalıdır.', {
+          status: 400,
+          details: { fields: ['studentNumber'] },
+        });
+      }
+
       if (!Number.isInteger(classId) || classId < 1) {
         return res.fail('CLASS_REQUIRED', 'Geçerli bir sınıf seçin.', {
           status: 400,
@@ -204,6 +211,20 @@ export default function createStudentsRouter(prisma) {
       const firstName = trim(req.body.firstName);
       const lastName = trim(req.body.lastName);
       const classId = Number(req.body.classId);
+
+      if (!studentNumber || !firstName || !lastName) {
+        return res.fail('VALIDATION_ERROR', 'Öğrenci numarası, ad ve soyad zorunludur.', {
+          status: 400,
+          details: { fields: ['studentNumber', 'firstName', 'lastName'].filter((f) => !trim(req.body[f])) },
+        });
+      }
+
+      if (!/^\d+$/.test(studentNumber)) {
+        return res.fail('VALIDATION_ERROR', 'Öğrenci numarası sadece rakamlardan oluşmalıdır.', {
+          status: 400,
+          details: { fields: ['studentNumber'] },
+        });
+      }
 
       const existing = await prisma.student.findUnique({ where: { id } });
       if (!existing) {

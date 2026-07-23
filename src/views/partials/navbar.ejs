@@ -4,6 +4,9 @@
       <span class="navbar__logo" aria-hidden="true">NK</span>
       <span><%= appName %></span>
     </a>
+    <button type="button" class="btn btn--ghost btn--icon navbar__burger" id="navbar-burger" aria-label="Menüyü Aç" aria-expanded="false">
+      <i data-lucide="menu"></i>
+    </button>
     <nav class="navbar__nav" aria-label="Ana menü">
       <a href="/" class="navbar__link<%= activeNav === 'program' ? ' navbar__link--active' : '' %>">Program</a>
       <a href="/teachers" class="navbar__link<%= activeNav === 'teachers' ? ' navbar__link--active' : '' %>">Öğretmenler</a>
@@ -26,6 +29,13 @@
         </div>
       </div>
       <%- include('theme-toggle') %>
+      <% if (locals.session && locals.session.authenticated) { %>
+        <form action="/logout" method="POST" style="display: inline-flex; margin: 0;">
+          <button type="submit" class="btn btn--ghost btn--icon" title="Çıkış Yap" aria-label="Çıkış Yap">
+            <i data-lucide="log-out"></i>
+          </button>
+        </form>
+      <% } %>
     </div>
   </div>
 </header>

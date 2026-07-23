@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
+import bcrypt from 'bcrypt';
 import { apiResponseMiddleware } from './lib/apiResponse.js';
 import { renderPage } from './lib/renderPage.js';
 import { requireAuth } from './middleware/auth.js';
@@ -12,12 +13,37 @@ import createStudentsRouter from './routes/students.js';
 import createClassesRouter from './routes/classes.js';
 import createSessionsRouter from './routes/sessions.js';
 import createPdfRouter from './routes/pdf.js';
+import createCalendarRouter from './routes/calendarApi.js';
 import authRouter from './routes/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export async function createApp(options = {}) {
   const prisma = options.prisma ?? (await import('./lib/prisma.js')).getPrisma();
+
+  // Admin Initialization Block
+  try {
+    if (prisma && prisma.admin) {
+      const adminExists = await prisma.admin.findUnique({
+        where: { username: 'admin' },
+      });
+      if (!adminExists) {
+        const hashedPassword = await bcrypt.hash('password123', 10);
+        await prisma.admin.create({
+          data: {
+            username: 'admin',
+            password: hashedPassword,
+          },
+        });
+        console.log('Admin user initialized with default credentials.');
+      }
+    }
+  } catch (err) {
+    if (err.code !== 'P2021') {
+      console.error('Failed to initialize admin user:', err);
+    }
+  }
+
   const app = express();
 
   app.set('view engine', 'ejs');
@@ -43,6 +69,11 @@ export async function createApp(options = {}) {
 
   app.use(apiResponseMiddleware);
 
+  app.use((req, res, next) => {
+    res.locals.session = req.session;
+    next();
+  });
+
   app.locals.appName = 'Nobel Kurs Merkezi';
 
   app.use(requireAuth);
@@ -52,6 +83,7 @@ export async function createApp(options = {}) {
   app.use('/students', createStudentsRouter(prisma));
   app.use('/api/classes', createClassesRouter(prisma));
   app.use('/api/sessions', createSessionsRouter(prisma));
+  app.use('/api/calendar', createCalendarRouter(prisma));
   app.use('/pdf', createPdfRouter(prisma));
   app.use('/', authRouter);
 

@@ -13,7 +13,8 @@
     "postinstall": "prisma generate && node node_modules/puppeteer/install.mjs",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "set-password": "node scripts/setPassword.js"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma"

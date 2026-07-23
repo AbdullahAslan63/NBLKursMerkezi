@@ -2,19 +2,24 @@
 
 export async function findStudentScheduleConflicts(
   prisma,
-  { dayOfWeek, startTime, endTime, studentIds, excludeSessionId = null },
+  { dayOfWeek, startTime, endTime, studentIds, excludeSessionId = null, month, weekNumber },
 ) {
   if (!studentIds?.length) return [];
+
+  // Ay+hafta bazlı çakışma filtresi
+  const sessionFilter = {
+    dayOfWeek,
+    startTime,
+    endTime,
+    ...(excludeSessionId ? { id: { not: excludeSessionId } } : {}),
+    ...(month !== undefined ? { month } : {}),
+    ...(weekNumber !== undefined ? { weekNumber } : {}),
+  };
 
   const conflicts = await prisma.studySessionStudent.findMany({
     where: {
       studentId: { in: studentIds },
-      studySession: {
-        dayOfWeek,
-        startTime,
-        endTime,
-        ...(excludeSessionId ? { id: { not: excludeSessionId } } : {}),
-      },
+      studySession: sessionFilter,
     },
     include: {
       student: { select: { id: true, firstName: true, lastName: true } },
@@ -29,3 +34,4 @@ export async function findStudentScheduleConflicts(
     teacherName: c.studySession.teacher.name,
   }));
 }
+
