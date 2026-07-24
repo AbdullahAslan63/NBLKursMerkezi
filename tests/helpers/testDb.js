@@ -1,11 +1,13 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { createAdapter } from '../../src/lib/prisma.js';
 
 export function createTestPrisma() {
   process.env.AUTH_ENABLED = 'false';
-  const url = process.env.DATABASE_URL_TEST || "file:./test.db";
-  const adapter = new PrismaBetterSqlite3({ url });
-  return new PrismaClient({ adapter });
+  const url = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('DATABASE_URL_TEST veya DATABASE_URL tanımlı değil');
+  }
+  return new PrismaClient({ adapter: createAdapter(url) });
 }
 
 /** FK sırasına göre tabloları temizle */

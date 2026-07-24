@@ -17,8 +17,8 @@ Nobel Kurs Merkezi için web tabanlı etüt planlama ve takip sistemi. Kurs müd
 | Katman | Teknoloji | Not |
 |---|---|---|
 | Backend | Node.js + Express | |
-| ORM | Prisma + `@prisma/adapter-pg` | Driver adapter, Prisma v7 gereksinimi |
-| Veritabanı | PostgreSQL (`pg` pool) | Neon database connection |
+| ORM | Prisma + `@prisma/adapter-pg` / `@prisma/adapter-neon` | Driver adapter, Prisma v7; URL'ye göre otomatik seçim (`src/lib/prisma.js`) |
+| Veritabanı | PostgreSQL (`pg` veya Neon serverless) | `*.neon.tech` → Neon; diğer Postgres → `pg`; `PRISMA_ADAPTER=neon\|pg` ile zorlanabilir |
 | Template | EJS | Sayfa iskeleti + AJAX ile çekilen partial'lar |
 | İstemci etkileşimi | Vanilla JS (fetch) | Build tooling yok; v1'de Alpine.js kullanılmaz |
 | Oturum / auth | express-session + bcrypt | Tek kullanıcı; Faz 7, prod öncesi zorunlu |

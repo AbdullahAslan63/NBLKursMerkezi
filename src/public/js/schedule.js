@@ -81,7 +81,7 @@ async function fetchAndRenderCalendar() {
     if (periodLabel) {
       periodLabel.innerHTML = `
         <span class="calendar-nav__period-icon"><i data-lucide="calendar-days"></i></span>
-        <span>${calendarInfo.startDate} — ${calendarInfo.endDate}</span>
+        <span>${calendarInfo.periodLabel || `${calendarInfo.startDate} — ${calendarInfo.endDate}`}</span>
       `;
     }
 
@@ -130,9 +130,11 @@ function renderDayPills(days, todayKey) {
   const now = new Date();
   const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayInWeek = days.some((d) => d.date === todayDateStr);
-  const defaultActiveKey = todayInWeek
+  const fallbackKey = todayInWeek
     ? days.find((d) => d.date === todayDateStr).key
     : (days[0]?.key || 'MONDAY');
+  const activeDayExists = activeDayKey && days.some((d) => d.key === activeDayKey);
+  const defaultActiveKey = activeDayExists ? activeDayKey : fallbackKey;
 
   daySelector.innerHTML = days
     .map((day) => {
@@ -170,9 +172,11 @@ function renderTimelines(days, daySessionsMap, todayKey) {
   const now = new Date();
   const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayInWeek = days.some((d) => d.date === todayDateStr);
-  const defaultActiveKey = todayInWeek
+  const fallbackKey = todayInWeek
     ? days.find((d) => d.date === todayDateStr).key
     : (days[0]?.key || 'MONDAY');
+  const activeDayExists = activeDayKey && days.some((d) => d.key === activeDayKey);
+  const defaultActiveKey = activeDayExists ? activeDayKey : fallbackKey;
 
   let html = '';
   days.forEach((day) => {
@@ -347,6 +351,8 @@ modal?.addEventListener('click', (e) => {
 
 modal?.addEventListener('cancel', (e) => {
   e.preventDefault();
+  // Onay diyaloğu açıkken Escape etüt penceresini kapatmasın
+  if (document.querySelector('dialog.confirm-dialog[open]')) return;
   closeModal();
 });
 

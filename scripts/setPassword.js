@@ -1,15 +1,18 @@
+import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcrypt';
 import { fileURLToPath } from 'url';
+import { getPrisma, resetPrisma } from '../src/lib/prisma.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const envPath = path.resolve(__dirname, '../.env');
 
 const password = process.argv[2];
+const username = process.argv[3] || 'admin';
 
 if (!password) {
-  console.error('Lütfen bir şifre belirtin. Örnek: npm run set-password <sifre>');
+  console.error('Lütfen bir şifre belirtin. Örnek: npm run set-password <sifre> [kullaniciAdi]');
   process.exit(1);
 }
 
@@ -37,16 +40,25 @@ try {
   }
 
   if (!found) {
-    // If the last line is not empty, add an empty line first or just push it
     if (lines.length > 0 && lines[lines.length - 1].trim() !== '') {
       lines.push('');
     }
     lines.push(newEntry);
   }
 
-  // Write back with newlines
   fs.writeFileSync(envPath, lines.join('\n'), 'utf8');
-  console.log(`Şifre başarıyla hash'lendi ve .env dosyasına ADMIN_PASSWORD_HASH olarak kaydedildi.`);
+  console.log(`Şifre hash'i .env dosyasına ${hashKey} olarak kaydedildi.`);
+
+  process.env.ADMIN_PASSWORD_HASH = hash;
+  const prisma = getPrisma();
+  await prisma.admin.upsert({
+    where: { username },
+    create: { username, password: hash },
+    update: { password: hash },
+  });
+  console.log(`Veritabanında "${username}" kullanıcısının şifresi güncellendi.`);
+  await prisma.$disconnect();
+  resetPrisma();
 } catch (error) {
   console.error('Şifre güncellenirken bir hata oluştu:', error);
   process.exit(1);

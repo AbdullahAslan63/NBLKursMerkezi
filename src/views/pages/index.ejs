@@ -42,7 +42,7 @@
     <% if (allWeeks.length > 0) { %>
       <% const currentWeek = allWeeks.find(w => w.weekNumber === selectedWeek); %>
       <% if (currentWeek) { %>
-        <span><%= currentWeek.startDate %> — <%= currentWeek.endDate %></span>
+        <span><%= currentWeek.periodLabel %></span>
       <% } %>
     <% } %>
   </div>

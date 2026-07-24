@@ -204,6 +204,27 @@ export function getMonthLabel(monthNum) {
 }
 
 /**
+ * Hafta seçici / dönem etiketi için metin.
+ * Tam hafta (7 gün): "1. Hafta" — kısmi: "1. Hafta (4 gün)"
+ */
+export function formatWeekLabel(weekNumber, dayCount) {
+  const base = `${weekNumber}. Hafta`;
+  if (!dayCount || dayCount >= 7) return base;
+  return `${base} (${dayCount} gün)`;
+}
+
+/**
+ * Dönem aralığı metni.
+ * Tam hafta: "YYYY-MM-DD — YYYY-MM-DD"
+ * Kısmi: "YYYY-MM-DD — YYYY-MM-DD · 4 gün"
+ */
+export function formatWeekPeriod(startDate, endDate, dayCount) {
+  const range = `${startDate} — ${endDate}`;
+  if (!dayCount || dayCount >= 7) return range;
+  return `${range} · ${dayCount} gün`;
+}
+
+/**
  * Verilen YYYY-MM-DD tarih stringinden dayOfWeek, month, weekNumber değerlerini hesaplar.
  * @param {string} dateStr — 'YYYY-MM-DD'
  * @returns {{ dayOfWeek: string, month: number, weekNumber: number }}

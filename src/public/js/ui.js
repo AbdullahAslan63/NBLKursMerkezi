@@ -20,17 +20,11 @@ export function showToast(message, type = 'success', duration = 4000) {
   }, duration);
 }
 
-/** Onay diyaloğu — confirm() yerine özel modal (Faz 1+) */
+/** Onay diyaloğu — confirm() yerine native <dialog> + showModal() (Top Layer garantisi) */
 export function showConfirm(message, { title = 'Emin misiniz?', confirmLabel = 'Evet', cancelLabel = 'İptal' } = {}) {
   return new Promise((resolve) => {
-    const backdrop = document.createElement('div');
-    backdrop.className = 'modal-backdrop';
-    backdrop.setAttribute('role', 'presentation');
-
-    const dialog = document.createElement('div');
-    dialog.className = 'modal confirm-dialog';
-    dialog.setAttribute('role', 'alertdialog');
-    dialog.setAttribute('aria-modal', 'true');
+    const dialog = document.createElement('dialog');
+    dialog.className = 'confirm-dialog';
     dialog.setAttribute('aria-labelledby', 'confirm-title');
 
     dialog.innerHTML = `
@@ -42,11 +36,12 @@ export function showConfirm(message, { title = 'Emin misiniz?', confirmLabel = '
       </div>
     `;
 
-    backdrop.appendChild(dialog);
-    document.body.appendChild(backdrop);
+    document.body.appendChild(dialog);
+    dialog.showModal();
 
     function close(result) {
-      backdrop.remove();
+      dialog.close();
+      dialog.remove();
       document.removeEventListener('keydown', onKeydown);
       resolve(result);
     }
@@ -55,8 +50,14 @@ export function showConfirm(message, { title = 'Emin misiniz?', confirmLabel = '
       if (e.key === 'Escape') close(false);
     }
 
-    backdrop.addEventListener('click', (e) => {
-      if (e.target === backdrop) close(false);
+    dialog.addEventListener('click', (e) => {
+      const rect = dialog.getBoundingClientRect();
+      const clickedOutside =
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom;
+      if (clickedOutside) close(false);
     });
 
     dialog.querySelector('[data-action="cancel"]').addEventListener('click', () => close(false));

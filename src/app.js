@@ -2,11 +2,11 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
-import bcrypt from 'bcrypt';
 import { apiResponseMiddleware } from './lib/apiResponse.js';
 import { renderPage } from './lib/renderPage.js';
 import { requireAuth } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { seedAdmin } from './lib/seedAdmin.js';
 import { createIndexHandler } from './routes/index.js';
 import createTeachersRouter from './routes/teachers.js';
 import createStudentsRouter from './routes/students.js';
@@ -21,28 +21,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export async function createApp(options = {}) {
   const prisma = options.prisma ?? (await import('./lib/prisma.js')).getPrisma();
 
-  // Admin Initialization Block
-  try {
-    if (prisma && prisma.admin) {
-      const adminExists = await prisma.admin.findUnique({
-        where: { username: 'admin' },
-      });
-      if (!adminExists) {
-        const hashedPassword = await bcrypt.hash('password123', 10);
-        await prisma.admin.create({
-          data: {
-            username: 'admin',
-            password: hashedPassword,
-          },
-        });
-        console.log('Admin user initialized with default credentials.');
-      }
-    }
-  } catch (err) {
-    if (err.code !== 'P2021') {
-      console.error('Failed to initialize admin user:', err);
-    }
-  }
+  await seedAdmin(prisma);
 
   const app = express();
 

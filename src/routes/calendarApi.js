@@ -6,6 +6,8 @@ import {
   getCalendarYear,
   getMonthLabel,
   getTodayDayKey,
+  formatWeekLabel,
+  formatWeekPeriod,
 } from '../config/schedule.js';
 
 /**
@@ -99,6 +101,12 @@ export default function createCalendarRouter(prisma) {
           weekNumber: selectedWeek.weekNumber,
           startDate: selectedWeek.startDate,
           endDate: selectedWeek.endDate,
+          dayCount: selectedWeek.days.length,
+          periodLabel: formatWeekPeriod(
+            selectedWeek.startDate,
+            selectedWeek.endDate,
+            selectedWeek.days.length,
+          ),
           year,
           totalWeeks: allWeeks.length,
         },
@@ -142,7 +150,7 @@ export default function createCalendarRouter(prisma) {
       year,
       weeks: weeks.map((w) => ({
         weekNumber: w.weekNumber,
-        label: `${w.weekNumber}. Hafta`,
+        label: formatWeekLabel(w.weekNumber, w.days.length),
         startDate: w.startDate,
         endDate: w.endDate,
         dayCount: w.days.length,

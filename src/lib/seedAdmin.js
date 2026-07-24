@@ -28,7 +28,7 @@ export async function seedAdmin(prisma) {
         },
       });
       console.log('Admin user created successfully.');
-    } else if (envHash && envHash.trim() !== '' || envPassword && envPassword.trim() !== '') {
+    } else if ((envHash && envHash.trim() !== '') || (envPassword && envPassword.trim() !== '')) {
       await prisma.admin.update({
         where: { username },
         data: {

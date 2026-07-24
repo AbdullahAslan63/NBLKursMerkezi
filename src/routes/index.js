@@ -8,6 +8,8 @@ import {
   getWeeksOfMonth,
   getCalendarYear,
   getMonthLabel,
+  formatWeekLabel,
+  formatWeekPeriod,
 } from '../config/schedule.js';
 
 /** Anasayfa — dinamik takvim tabanlı program ızgarası */
@@ -108,9 +110,11 @@ export function createIndexHandler(prisma) {
         selectedMonthLabel: getMonthLabel(selectedMonth),
         allWeeks: allWeeks.map((w) => ({
           weekNumber: w.weekNumber,
-          label: `${w.weekNumber}. Hafta`,
+          label: formatWeekLabel(w.weekNumber, w.days.length),
           startDate: w.startDate,
           endDate: w.endDate,
+          dayCount: w.days.length,
+          periodLabel: formatWeekPeriod(w.startDate, w.endDate, w.days.length),
         })),
         calendarYear: year,
       });

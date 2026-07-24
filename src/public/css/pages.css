@@ -1025,7 +1025,6 @@
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
-    z-index: 10000 !important;
     animation: modal-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
@@ -1305,8 +1304,16 @@
   max-height: 200px;
 }
 
-.student-choice-row {
+/* .form-field label { display:block } üstüne yaz — checkbox solda, metin sağda */
+.form-field .student-choice-row {
   position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 0;
+  font-weight: inherit;
+  font-size: inherit;
   transition: background var(--transition-fast);
 }
 
@@ -1316,19 +1323,27 @@
   cursor: pointer;
   height: 0;
   width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
 }
 
-.choice-row__checkbox-ui {
+.form-field .student-choice-row .choice-row__checkbox-ui {
   position: relative;
-  display: inline-block;
+  display: block;
   width: 18px;
   height: 18px;
   border: 2px solid var(--color-border);
   border-radius: 4px;
   background: var(--color-surface);
   flex-shrink: 0;
-  margin-top: 3px;
+  margin: 0;
   transition: all var(--transition-fast);
+}
+
+.form-field .student-choice-row .choice-row__text {
+  flex: 1;
+  min-width: 0;
 }
 
 .student-choice-row:hover .choice-row__checkbox-ui {
