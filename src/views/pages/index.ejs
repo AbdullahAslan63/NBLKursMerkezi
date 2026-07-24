@@ -1,62 +1,166 @@
-<div class="page-header">
-  <h1>Haftalık Etüt Programı</h1>
-  <p>Pazartesi – Pazar, tekrarlayan program</p>
-</div>
-
-<div class="stat-cards" aria-label="Özet istatistikler">
-  <div class="stat-card">
-    <div class="stat-card__value" id="stat-sessions"><%= stats.sessions %></div>
-    <div class="stat-card__label">etüt toplam</div>
+<div class="page-header page-toolbar">
+  <div>
+    <h1>Haftalık Etüt Programı</h1>
+    <p class="page-header__subtitle"><%= selectedMonthLabel %> — <%= selectedWeek %>. Hafta, <%= calendarYear %></p>
   </div>
-  <div class="stat-card">
-    <div class="stat-card__value" id="stat-teachers"><%= stats.teachers %></div>
-    <div class="stat-card__label">öğretmen aktif</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-card__value" id="stat-students"><%= stats.students %></div>
-    <div class="stat-card__label">öğrenci kayıtlı</div>
+  <div class="page-toolbar__actions">
+    <button type="button" class="btn btn--secondary" id="btn-export-daily-pdf">Günlük Programı İndir</button>
+    <button type="button" class="btn btn--secondary" id="btn-export-master-pdf">Genel Programı İndir</button>
   </div>
 </div>
 
-<p class="schedule-legend" aria-hidden="true">
-  <span class="schedule-legend__item"><span class="schedule-legend__dot schedule-legend__dot--filled"></span> Dolu hücre</span>
-  <span class="schedule-legend__item"><span class="schedule-legend__dot"></span> Boş hücre</span>
-  <span class="schedule-legend__item"><span class="schedule-legend__dot schedule-legend__dot--today"></span> Bugün</span>
-</p>
-
-<div class="schedule-grid-wrapper">
-  <table class="schedule-grid" role="grid" aria-label="Haftalık etüt programı">
-    <thead>
-      <tr>
-        <th class="schedule-grid__time-col" scope="col">Saat</th>
-        <% days.forEach(function(day) { %>
-          <th scope="col" class="<%= day.key === todayKey ? 'schedule-grid__today' : '' %>"><%= day.short %></th>
+<%# ── Takvim Navigasyonu — Ay + Hafta Seçici ── %>
+<div class="calendar-nav" id="calendar-nav" data-month="<%= selectedMonth %>" data-week="<%= selectedWeek %>" data-year="<%= calendarYear %>">
+  <div class="calendar-nav__selectors">
+    <div class="calendar-nav__group">
+      <label for="calendar-month-select" class="calendar-nav__label">
+        <i data-lucide="calendar" class="calendar-nav__label-icon"></i>
+        Ay
+      </label>
+      <select id="calendar-month-select" class="calendar-nav__select">
+        <% months.forEach(function(m) { %>
+          <option value="<%= m.value %>" <%= m.value === selectedMonth ? 'selected' : '' %>><%= m.label %></option>
         <% }); %>
-      </tr>
-    </thead>
-    <tbody>
-      <% timeSlots.forEach(function(slot) { %>
-        <tr>
-          <th class="schedule-grid__time-col" scope="row"><%= slot.label %></th>
-          <% days.forEach(function(day) { %>
-            <%
-              const cellKey = day.key + ':' + slot.startTime + ':' + slot.endTime;
-              const sessionCount = cellMap[cellKey] || 0;
-            %>
-            <%- include('../partials/table-cell', {
+      </select>
+    </div>
+
+    <div class="calendar-nav__group">
+      <label for="calendar-week-select" class="calendar-nav__label">
+        <i data-lucide="hash" class="calendar-nav__label-icon"></i>
+        Hafta
+      </label>
+      <select id="calendar-week-select" class="calendar-nav__select">
+        <% allWeeks.forEach(function(w) { %>
+          <option value="<%= w.weekNumber %>" <%= w.weekNumber === selectedWeek ? 'selected' : '' %>><%= w.label %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+
+  <div class="calendar-nav__period" id="calendar-period-label">
+    <span class="calendar-nav__period-icon"><i data-lucide="calendar-days"></i></span>
+    <% if (allWeeks.length > 0) { %>
+      <% const currentWeek = allWeeks.find(w => w.weekNumber === selectedWeek); %>
+      <% if (currentWeek) { %>
+        <span><%= currentWeek.periodLabel %></span>
+      <% } %>
+    <% } %>
+  </div>
+</div>
+
+<div class="stats-pills" aria-label="Özet istatistikler">
+  <div class="stat-pill">
+    <i data-lucide="calendar" class="stat-pill__icon"></i>
+    <span class="stat-pill__value" id="stat-sessions"><%= stats.sessions %></span>
+    <span class="stat-pill__label">etüt</span>
+  </div>
+  <div class="stat-pill">
+    <i data-lucide="graduation-cap" class="stat-pill__icon"></i>
+    <span class="stat-pill__value" id="stat-teachers"><%= stats.teachers %></span>
+    <span class="stat-pill__label">öğretmen</span>
+  </div>
+  <div class="stat-pill">
+    <i data-lucide="users" class="stat-pill__icon"></i>
+    <span class="stat-pill__value" id="stat-students"><%= stats.students %></span>
+    <span class="stat-pill__label">öğrenci</span>
+  </div>
+</div>
+
+<%# ── Gün Seçici (tarihli) ── %>
+<%
+  const now = new Date();
+  const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayInThisWeek = days.some(d => d.date === todayDateStr);
+  const defaultActiveKey = todayInThisWeek ? days.find(d => d.date === todayDateStr).key : (days[0]?.key || 'MONDAY');
+%>
+<nav class="day-selector" aria-label="Gün seçici" id="day-selector-nav">
+  <% days.forEach(function(day) { %>
+    <%
+      const isActive = day.key === defaultActiveKey;
+      const isToday = day.date === todayDateStr;
+      let pillClasses = 'day-selector__pill';
+      if (isActive) pillClasses += ' day-selector__pill--active';
+      if (isToday) pillClasses += ' day-selector__pill--today';
+    %>
+    <button
+      type="button"
+      class="<%= pillClasses %>"
+      data-day="<%= day.key %>"
+      data-date="<%= day.date || '' %>"
+      aria-pressed="<%= isActive ? 'true' : 'false' %>"
+    >
+      <span class="day-selector__short"><%= day.short %></span>
+      <% if (day.dateLabel) { %>
+        <span class="day-selector__date"><%= day.dateLabel %></span>
+      <% } else { %>
+        <span class="day-selector__full"><%= day.label %></span>
+      <% } %>
+    </button>
+  <% }); %>
+</nav>
+
+<%# ── Timeline Panelleri ── %>
+<div id="timelines-container">
+  <% days.forEach(function(day) { %>
+    <div
+      class="day-timeline<%= day.key === defaultActiveKey ? ' day-timeline--active' : '' %>"
+      data-day="<%= day.key %>"
+      data-date="<%= day.date || '' %>"
+      role="region"
+      aria-label="<%= day.label %> programı"
+      <% if (day.key !== defaultActiveKey) { %>hidden<% } %>
+    >
+      <% const sessions = daySessionsMap[day.key] || []; %>
+      <% if (sessions.length === 0) { %>
+        <!-- Elegant Empty State -->
+        <div class="agenda-empty-state">
+          <div class="agenda-empty-state__icon-wrapper">
+            <i data-lucide="calendar" class="agenda-empty-state__icon"></i>
+          </div>
+          <h3 class="agenda-empty-state__title">Planlanmış Etüt Yok</h3>
+          <p class="agenda-empty-state__text">Bu gün için planlanmış herhangi bir etüt bulunmuyor.</p>
+          <button type="button" class="btn btn--primary btn--center-add" style="margin-top: var(--space-4);" data-action="center-add-session">
+            <i data-lucide="plus" class="btn--center-add__icon"></i>
+            <span>Yeni Etüt Ekle</span>
+          </button>
+        </div>
+      <% } else { %>
+        <div class="agenda-timeline-container">
+          <%
+            const timeGroups = [];
+            sessions.forEach(function(session) {
+              const timeKey = session.startTime + ' – ' + session.endTime;
+              let group = timeGroups.find(g => g.timeKey === timeKey);
+              if (!group) {
+                group = { 
+                  timeKey: timeKey, 
+                  startTime: session.startTime, 
+                  endTime: session.endTime, 
+                  sessions: [] 
+                };
+                timeGroups.push(group);
+              }
+              group.sessions.push(session);
+            });
+          %>
+          <% timeGroups.forEach(function(group) { %>
+            <%- include('../partials/agenda-slot', {
               dayKey: day.key,
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-              sessionCount: sessionCount,
-              isTodayColumn: day.key === todayKey,
+              group: group,
             }) %>
           <% }); %>
-        </tr>
-      <% }); %>
-    </tbody>
-  </table>
+        </div>
+      <% } %>
+    </div>
+  <% }); %>
 </div>
 
+<%# ── Floating Action Button (FAB) ── %>
+<button type="button" class="fab-btn" id="fab-add-session" aria-label="Yeni Etüt Ekle" data-tooltip="Yeni Etüt Ekle">
+  <i data-lucide="plus" class="fab-btn__icon"></i>
+</button>
+
+<%# ── Modal ── %>
 <dialog id="schedule-modal" class="schedule-modal-dialog">
   <div class="schedule-modal-dialog__header">
     <button type="button" class="btn btn--secondary btn--icon" data-action="close-modal" aria-label="Kapat">✕</button>

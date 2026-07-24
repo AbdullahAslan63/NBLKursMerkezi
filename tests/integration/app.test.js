@@ -7,6 +7,7 @@ import { createMockPrisma } from '../helpers/mockPrisma.js';
 let app;
 
 before(async () => {
+  process.env.AUTH_ENABLED = 'false';
   app = await createApp({ prisma: createMockPrisma() });
 });
 

@@ -68,8 +68,8 @@ Bu ajan sadece kod yazmaz; her oturumda projeyi aşağıdaki **beş farklı merc
 - [x] **Faz 4:** Radio + checkbox formu boş gönderimi engelliyor mu; öğrenci aynı gün+saate ikinci etüde atanamıyor mu (§8).
 - [x] **Faz 5:** Düzenleme sırasında mevcut öğrenci seçimleri formda önceden işaretli geliyor mu; çakışma kontrolü düzenlemede de çalışıyor mu.
 - [x] **Faz 6:** 4 PDF varyantı Türkçe karakterleri doğru render ediyor mu; eşzamanlı tek PDF işi kuralı uygulanıyor mu (§8).
-- [ ] **Faz 7:** Login olmadan erişim yok; session AidatPanel'den izole; rate limit aktif (§8).
-- [ ] **Faz 8:** Tema butonu tüm sayfalarda çalışıyor mu, tercih localStorage'da kalıcı mı, PDF çıktıları açık temada mı üretiliyor.
+- [x] **Faz 7:** Login olmadan erişim yok; session AidatPanel'den izole; rate limit aktif (§8).
+- [x] **Faz 8:** Tema butonu tüm sayfalarda çalışıyor mu, tercih localStorage'da kalıcı mı, PDF çıktıları açık temada mı üretiliyor.
 
 ---
 

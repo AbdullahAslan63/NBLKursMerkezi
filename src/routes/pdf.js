@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { DAYS_OF_WEEK, TIME_SLOTS } from '../config/schedule.js';
+import { DAYS_OF_WEEK, TIME_SLOTS, getMonthLabel } from '../config/schedule.js';
 import {
   buildStudentCellMap,
   buildTeacherCellMap,
   studentDisplayName,
   studentSubtitle,
+  getDynamicTimeSlots,
 } from '../lib/pdfScheduleData.js';
 import {
   enqueuePdfJob,
@@ -57,6 +58,9 @@ export default function createPdfRouter(prisma) {
   const router = Router();
 
   router.get('/students/all', async (req, res) => {
+    const month = req.query.month ? Number(req.query.month) : null;
+    const week = req.query.week ? Number(req.query.week) : null;
+
     const students = await prisma.student.findMany({
       orderBy: [{ schoolClass: { name: 'asc' } }, { lastName: 'asc' }, { firstName: 'asc' }],
       include: {
@@ -65,16 +69,29 @@ export default function createPdfRouter(prisma) {
           include: {
             studySession: { include: { teacher: true } },
           },
+          where: {
+            studySession: {
+              ...(month ? { month } : {}),
+              ...(week ? { weekNumber: week } : {}),
+            }
+          }
         },
       },
     });
 
+    let periodText = '';
+    if (month && week) {
+      periodText = ` (${getMonthLabel(month)} - ${week}. Hafta)`;
+    }
+
     const base = pdfBaseData(req);
     const pages = students.map((student) => {
       const sessions = student.sessions.map((link) => link.studySession);
+      const timeSlots = getDynamicTimeSlots(sessions);
       return {
         heading: studentDisplayName(student),
-        subheading: studentSubtitle(student),
+        subheading: studentSubtitle(student) + periodText,
+        timeSlots,
         cellMap: buildStudentCellMap(sessions),
       };
     });
@@ -90,10 +107,17 @@ export default function createPdfRouter(prisma) {
   });
 
   router.get('/teachers/all', async (req, res) => {
+    const month = req.query.month ? Number(req.query.month) : null;
+    const week = req.query.week ? Number(req.query.week) : null;
+
     const teachers = await prisma.teacher.findMany({
       orderBy: { name: 'asc' },
       include: {
         studySessions: {
+          where: {
+            ...(month ? { month } : {}),
+            ...(week ? { weekNumber: week } : {}),
+          },
           include: {
             students: { include: { student: true } },
           },
@@ -101,12 +125,24 @@ export default function createPdfRouter(prisma) {
       },
     });
 
+    let periodText = '';
+    if (month && week) {
+      periodText = ` (${getMonthLabel(month)} - ${week}. Hafta)`;
+    }
+
     const base = pdfBaseData(req);
-    const pages = teachers.map((teacher) => ({
-      heading: teacher.name,
-      subheading: `${teacher.studySessions.length} etüt`,
-      cellMap: buildTeacherCellMap(teacher.studySessions),
-    }));
+    const pages = teachers.map((teacher) => {
+      const sessions = teacher.studySessions;
+      const timeSlots = getDynamicTimeSlots(sessions);
+      return {
+        heading: teacher.name,
+        subheading: teacher.subject 
+          ? `${teacher.subject} · ${sessions.length} etüt${periodText}` 
+          : `${sessions.length} etüt${periodText}`,
+        timeSlots,
+        cellMap: buildTeacherCellMap(sessions),
+      };
+    });
 
     return handlePdfRoute(res, 'ogretmen-programlari.pdf', () =>
       generatePdfFromTemplate('bulk-schedules', {
@@ -122,6 +158,9 @@ export default function createPdfRouter(prisma) {
     const id = parseId(req.params.id);
     if (!id) return res.fail('NOT_FOUND', 'Öğrenci bulunamadı.', { status: 404 });
 
+    const month = req.query.month ? Number(req.query.month) : null;
+    const week = req.query.week ? Number(req.query.week) : null;
+
     const student = await prisma.student.findUnique({
       where: { id },
       include: {
@@ -130,6 +169,12 @@ export default function createPdfRouter(prisma) {
           include: {
             studySession: { include: { teacher: true } },
           },
+          where: {
+            studySession: {
+              ...(month ? { month } : {}),
+              ...(week ? { weekNumber: week } : {}),
+            }
+          }
         },
       },
     });
@@ -137,14 +182,27 @@ export default function createPdfRouter(prisma) {
     if (!student) return res.fail('NOT_FOUND', 'Öğrenci bulunamadı.', { status: 404 });
 
     const sessions = student.sessions.map((link) => link.studySession);
+
+    // Prevent empty exports
+    if (sessions.length === 0) {
+      return res.fail('VALIDATION_ERROR', 'Bu tarih aralığında planlanmış etüt bulunmamaktadır.', { status: 400 });
+    }
+
+    let periodText = '';
+    if (month && week) {
+      periodText = ` (${getMonthLabel(month)} - ${week}. Hafta)`;
+    }
+
     const name = studentDisplayName(student);
     const filename = `ogrenci-${student.studentNumber}.pdf`;
+    const timeSlots = getDynamicTimeSlots(sessions);
 
     return handlePdfRoute(res, filename, () =>
       generatePdfFromTemplate('student-schedule', {
         ...pdfBaseData(req),
+        timeSlots,
         heading: name,
-        subheading: studentSubtitle(student),
+        subheading: studentSubtitle(student) + periodText,
         cellMap: buildStudentCellMap(sessions),
       }),
     );
@@ -154,10 +212,17 @@ export default function createPdfRouter(prisma) {
     const id = parseId(req.params.id);
     if (!id) return res.fail('NOT_FOUND', 'Öğretmen bulunamadı.', { status: 404 });
 
+    const month = req.query.month ? Number(req.query.month) : null;
+    const week = req.query.week ? Number(req.query.week) : null;
+
     const teacher = await prisma.teacher.findUnique({
       where: { id },
       include: {
         studySessions: {
+          where: {
+            ...(month ? { month } : {}),
+            ...(week ? { weekNumber: week } : {}),
+          },
           include: {
             students: { include: { student: true } },
           },
@@ -167,13 +232,31 @@ export default function createPdfRouter(prisma) {
 
     if (!teacher) return res.fail('NOT_FOUND', 'Öğretmen bulunamadı.', { status: 404 });
 
+    const sessions = teacher.studySessions;
+
+    // Prevent empty exports
+    if (sessions.length === 0) {
+      return res.fail('VALIDATION_ERROR', 'Bu tarih aralığında planlanmış etüt bulunmamaktadır.', { status: 400 });
+    }
+
+    let periodText = '';
+    if (month && week) {
+      periodText = ` (${getMonthLabel(month)} - ${week}. Hafta)`;
+    }
+
     const filename = `ogretmen-${teacher.name.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+    const timeSlots = getDynamicTimeSlots(sessions);
+    const teacherSub = teacher.subject 
+      ? `${teacher.subject} · ${sessions.length} etüt${periodText}` 
+      : `${sessions.length} etüt${periodText}`;
 
     return handlePdfRoute(res, filename, () =>
       generatePdfFromTemplate('teacher-schedule', {
         ...pdfBaseData(req),
+        timeSlots,
         heading: teacher.name,
-        cellMap: buildTeacherCellMap(teacher.studySessions),
+        subheading: teacherSub,
+        cellMap: buildTeacherCellMap(sessions),
       }),
     );
   });

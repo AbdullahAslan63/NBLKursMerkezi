@@ -1,5 +1,7 @@
 import { apiJson, apiFormData } from './api.js';
 import { showToast, showConfirm } from './ui.js';
+import { exportListPdf } from './listPdfExport.js';
+import { downloadPdf } from './pdf.js';
 
 const tbody = document.getElementById('students-tbody');
 const emptyEl = document.getElementById('students-empty');
@@ -38,10 +40,71 @@ function updateEmptyState() {
   tableWrap.style.display = hasRows ? '' : 'none';
 }
 
+let activeClassFilter = 'Tümü';
+const filterChipsContainer = document.getElementById('class-filter-chips');
+
+function getUniqueClassNames() {
+  const names = new Set();
+  tbody.querySelectorAll('tr').forEach(row => {
+    if (row.dataset.className) {
+      names.add(row.dataset.className.trim());
+    }
+  });
+  return [...names].sort((a, b) => a.localeCompare(b, { numeric: true }));
+}
+
+function renderClassFilterChips() {
+  if (!filterChipsContainer) return;
+  filterChipsContainer.innerHTML = '';
+
+  const classes = getUniqueClassNames();
+  
+  if (activeClassFilter !== 'Tümü' && !classes.includes(activeClassFilter)) {
+    activeClassFilter = 'Tümü';
+  }
+
+  const allChip = document.createElement('button');
+  allChip.type = 'button';
+  allChip.className = `filter-chip${activeClassFilter === 'Tümü' ? ' filter-chip--active' : ''}`;
+  allChip.textContent = 'Tümü';
+  allChip.addEventListener('click', () => {
+    activeClassFilter = 'Tümü';
+    updateActiveChipStyles();
+    filterRows();
+  });
+  filterChipsContainer.appendChild(allChip);
+
+  classes.forEach(cName => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = `filter-chip${activeClassFilter === cName ? ' filter-chip--active' : ''}`;
+    chip.textContent = cName;
+    chip.addEventListener('click', () => {
+      activeClassFilter = cName;
+      updateActiveChipStyles();
+      filterRows();
+    });
+    filterChipsContainer.appendChild(chip);
+  });
+}
+
+function updateActiveChipStyles() {
+  filterChipsContainer.querySelectorAll('.filter-chip').forEach(chip => {
+    const isActive = chip.textContent === activeClassFilter;
+    chip.classList.toggle('filter-chip--active', isActive);
+  });
+}
+
 function filterRows() {
   const q = searchInput.value.trim().toLowerCase();
   tbody.querySelectorAll('tr').forEach((row) => {
-    row.hidden = q && !row.dataset.search.includes(q);
+    const rowSearch = row.dataset.search || '';
+    const rowClass = row.dataset.className || '';
+    
+    const matchesSearch = !q || rowSearch.includes(q);
+    const matchesClass = activeClassFilter === 'Tümü' || rowClass === activeClassFilter;
+    
+    row.hidden = !(matchesSearch && matchesClass);
   });
 }
 
@@ -53,6 +116,7 @@ function escapeHtml(text) {
 
 function appendRow(student) {
   const tr = document.createElement('tr');
+  tr.className = 'row-fade-in';
   tr.dataset.id = student.id;
   tr.dataset.number = student.studentNumber;
   tr.dataset.first = student.firstName;
@@ -76,6 +140,7 @@ function appendRow(student) {
   `;
   tbody.appendChild(tr);
   updateEmptyState();
+  renderClassFilterChips();
 }
 
 function updateRow(row, student) {
@@ -88,6 +153,7 @@ function updateRow(row, student) {
   row.querySelector('.student-cell__name').textContent = `${student.firstName} ${student.lastName}`;
   row.querySelector('.student-cell__number').textContent = student.studentNumber;
   row.querySelector('.badge').textContent = student.className;
+  renderClassFilterChips();
 }
 
 async function resolveClassId() {
@@ -155,10 +221,26 @@ form.addEventListener('submit', async (e) => {
       return;
     }
 
+    const studentNumber = document.getElementById('student-number').value.trim();
+    const firstName = document.getElementById('student-first').value.trim();
+    const lastName = document.getElementById('student-last').value.trim();
+
+    if (!studentNumber || !firstName || !lastName) {
+      formError.textContent = 'Öğrenci numarası, ad ve soyad zorunludur.';
+      formError.hidden = false;
+      return;
+    }
+
+    if (!/^\d+$/.test(studentNumber)) {
+      formError.textContent = 'Öğrenci numarası sadece rakamlardan oluşmalıdır.';
+      formError.hidden = false;
+      return;
+    }
+
     const payload = {
-      studentNumber: document.getElementById('student-number').value.trim(),
-      firstName: document.getElementById('student-first').value.trim(),
-      lastName: document.getElementById('student-last').value.trim(),
+      studentNumber,
+      firstName,
+      lastName,
       classId,
     };
 
@@ -189,6 +271,13 @@ tbody.addEventListener('click', async (e) => {
   const row = btn.closest('tr');
   const id = row.dataset.id;
 
+  if (btn.dataset.action === 'download-pdf') {
+    e.preventDefault();
+    e.stopPropagation();
+    openPdfDateModal(btn.dataset.pdfUrl, btn);
+    return;
+  }
+
   if (btn.dataset.action === 'edit') {
     openModal({
       id: Number(id),
@@ -210,8 +299,12 @@ tbody.addEventListener('click', async (e) => {
 
     try {
       const result = await apiJson(`/students/${id}`, { method: 'DELETE' });
-      row.remove();
-      updateEmptyState();
+      row.classList.add('row-fade-out');
+      setTimeout(() => {
+        row.remove();
+        updateEmptyState();
+        renderClassFilterChips();
+      }, 300);
       showToast(result.message || 'Öğrenci silindi.');
     } catch (err) {
       showToast(err.message, 'error');
@@ -387,11 +480,73 @@ importForm?.addEventListener('submit', async (e) => {
     importResult.hidden = false;
     showToast(result.message, 'success');
 
-    setTimeout(() => window.location.reload(), 1500);
+    // Dynamically insert or update imported student records in the DOM
+    if (Array.isArray(result.data.students)) {
+      result.data.students.forEach(student => {
+        const existingRow = tbody.querySelector(`tr[data-id="${student.id}"]`);
+        if (existingRow) {
+          updateRow(existingRow, student);
+        } else {
+          appendRow(student);
+        }
+      });
+      filterRows();
+    }
+
+    setTimeout(() => {
+      closeImportModal();
+      importResult.hidden = true;
+      importResult.innerHTML = '';
+    }, 2000);
   } catch (err) {
     importFormError.textContent = err.message;
     importFormError.hidden = false;
   } finally {
     document.getElementById('btn-do-import').disabled = false;
   }
+});
+
+// Dynamic Class Chips Initial Load
+renderClassFilterChips();
+
+/* PDF Date Modal ve İndirme Mantığı */
+const pdfDateModal = document.getElementById('pdf-date-modal');
+const pdfDateForm = document.getElementById('pdf-date-form');
+let currentPdfUrl = '';
+let currentPdfTrigger = null;
+
+function openPdfDateModal(url, trigger) {
+  currentPdfUrl = url;
+  currentPdfTrigger = trigger;
+  
+  const monthSelect = document.getElementById('pdf-month-select');
+  if (monthSelect) {
+    monthSelect.value = "9"; // default to Eylül (9)
+  }
+  
+  const weekSelect = document.getElementById('pdf-week-select');
+  if (weekSelect) {
+    weekSelect.value = "1";
+  }
+
+  pdfDateModal.showModal();
+}
+
+pdfDateModal?.querySelector('[data-action="cancel-pdf"]')?.addEventListener('click', () => {
+  pdfDateModal.close();
+});
+
+pdfDateForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const month = document.getElementById('pdf-month-select').value;
+  const week = document.getElementById('pdf-week-select').value;
+  pdfDateModal.close();
+
+  const url = `${currentPdfUrl}?month=${month}&week=${week}`;
+  await downloadPdf(url, { trigger: currentPdfTrigger });
+});
+
+document.getElementById('btn-export-pdf-students')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  openPdfDateModal('/pdf/students/all', e.currentTarget);
 });
