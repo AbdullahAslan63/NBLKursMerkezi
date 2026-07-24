@@ -3,6 +3,11 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { getPrisma } from '../lib/prisma.js';
 import { redirectIfAuthenticated } from '../middleware/auth.js';
+import {
+  loginRateLimit,
+  recordLoginFailure,
+  resetLoginFailures,
+} from '../middleware/loginRateLimit.js';
 
 const router = Router();
 
@@ -14,7 +19,7 @@ router.get('/login', redirectIfAuthenticated, async (req, res, next) => {
   }
 });
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', loginRateLimit, async (req, res, next) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.fail('VALIDATION_ERROR', 'Kullanıcı adı ve şifre zorunludur.', { status: 400 });
@@ -27,14 +32,17 @@ router.post('/login', async (req, res, next) => {
     });
 
     if (!admin) {
+      recordLoginFailure(req);
       return res.fail('VALIDATION_ERROR', 'Hatalı kullanıcı adı veya şifre.', { status: 400 });
     }
 
     const match = await bcrypt.compare(password, admin.password);
     if (!match) {
+      recordLoginFailure(req);
       return res.fail('VALIDATION_ERROR', 'Hatalı kullanıcı adı veya şifre.', { status: 400 });
     }
 
+    resetLoginFailures(req);
     req.session.authenticated = true;
     req.session.adminId = admin.id;
 

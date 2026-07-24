@@ -19,7 +19,11 @@ import authRouter from './routes/auth.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export async function createApp(options = {}) {
-  const prisma = options.prisma ?? (await import('./lib/prisma.js')).getPrisma();
+  const { getPrisma, setPrisma } = await import('./lib/prisma.js');
+  const prisma = options.prisma ?? getPrisma();
+  if (options.prisma) {
+    setPrisma(options.prisma);
+  }
 
   await seedAdmin(prisma);
 
