@@ -1,5 +1,7 @@
 import { apiJson } from './api.js';
 import { showToast, showConfirm } from './ui.js';
+import { exportListPdf } from './listPdfExport.js';
+import { downloadPdf } from './pdf.js';
 
 const tbody = document.getElementById('teachers-tbody');
 const emptyEl = document.getElementById('teachers-empty');
@@ -10,6 +12,8 @@ const form = document.getElementById('teacher-form');
 const nameInput = document.getElementById('teacher-name');
 const modalTitle = document.getElementById('teacher-modal-title');
 const nameError = document.getElementById('teacher-name-error');
+const subjectInput = document.getElementById('teacher-subject');
+const subjectSelect = document.getElementById('teacher-subject-select');
 
 let editingId = null;
 
@@ -33,6 +37,19 @@ function openModal(teacher = null) {
   editingId = teacher?.id ?? null;
   modalTitle.textContent = teacher ? 'Öğretmen Düzenle' : 'Öğretmen Ekle';
   nameInput.value = teacher?.name ?? '';
+  
+  if (subjectSelect) subjectSelect.value = '';
+  if (subjectInput) subjectInput.value = '';
+
+  if (teacher && teacher.subject) {
+    const isStandard = Array.from(subjectSelect?.options || []).some(opt => opt.value === teacher.subject);
+    if (isStandard) {
+      if (subjectSelect) subjectSelect.value = teacher.subject;
+    } else {
+      if (subjectInput) subjectInput.value = teacher.subject;
+    }
+  }
+
   nameError.hidden = true;
   nameInput.classList.remove('is-invalid');
   modal.showModal();
@@ -49,9 +66,11 @@ function appendRow(teacher) {
   const tr = document.createElement('tr');
   tr.dataset.id = teacher.id;
   tr.dataset.name = teacher.name;
-  tr.dataset.search = teacher.name.toLowerCase();
+  tr.dataset.subject = teacher.subject || '';
+  tr.dataset.search = `${teacher.name} ${teacher.subject || ''}`.toLowerCase();
   tr.innerHTML = `
     <td>${escapeHtml(teacher.name)}</td>
+    <td><span class="badge badge--subject">${escapeHtml(teacher.subject || 'Belirtilmemiş')}</span></td>
     <td><span class="badge">0 etüt</span></td>
     <td class="col-actions">
       <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/teachers/${teacher.id}" aria-label="PDF indir" title="PDF indir">⬇</button>
@@ -77,6 +96,9 @@ form.querySelector('[data-action="cancel"]')?.addEventListener('click', closeMod
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = nameInput.value.trim();
+  const customSubj = subjectInput ? subjectInput.value.trim() : '';
+  const selectedSubj = subjectSelect ? subjectSelect.value.trim() : '';
+  const subject = customSubj || selectedSubj;
   if (!name) {
     nameError.textContent = 'Öğretmen adı zorunludur.';
     nameError.hidden = false;
@@ -85,7 +107,7 @@ form.addEventListener('submit', async (e) => {
   }
 
   try {
-    const payload = { name };
+    const payload = { name, subject };
     const result = editingId
       ? await apiJson(`/teachers/${editingId}`, { method: 'PUT', body: payload })
       : await apiJson('/teachers', { method: 'POST', body: payload });
@@ -95,8 +117,11 @@ form.addEventListener('submit', async (e) => {
       const row = tbody.querySelector(`tr[data-id="${editingId}"]`);
       if (row) {
         row.dataset.name = teacher.name;
-        row.dataset.search = teacher.name.toLowerCase();
-        row.querySelector('td').textContent = teacher.name;
+        row.dataset.subject = teacher.subject || '';
+        row.dataset.search = `${teacher.name} ${teacher.subject || ''}`.toLowerCase();
+        row.querySelectorAll('td')[0].textContent = teacher.name;
+        const subjBadge = row.querySelectorAll('td')[1].querySelector('.badge--subject');
+        if (subjBadge) subjBadge.textContent = teacher.subject || 'Belirtilmemiş';
       }
       showToast(result.message || 'Öğretmen güncellendi.');
     } else {
@@ -117,8 +142,19 @@ tbody.addEventListener('click', async (e) => {
   const id = row.dataset.id;
   const name = row.dataset.name;
 
+  if (btn.dataset.action === 'download-pdf') {
+    e.preventDefault();
+    e.stopPropagation();
+    openPdfDateModal(btn.dataset.pdfUrl, btn);
+    return;
+  }
+
   if (btn.dataset.action === 'edit') {
-    openModal({ id: Number(id), name });
+    openModal({
+      id: Number(id),
+      name,
+      subject: row.dataset.subject || ''
+    });
     return;
   }
 
@@ -144,4 +180,46 @@ let searchTimer;
 searchInput?.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(filterRows, 200);
+});
+
+/* PDF Date Modal ve İndirme Mantığı */
+const pdfDateModal = document.getElementById('pdf-date-modal');
+const pdfDateForm = document.getElementById('pdf-date-form');
+let currentPdfUrl = '';
+let currentPdfTrigger = null;
+
+function openPdfDateModal(url, trigger) {
+  currentPdfUrl = url;
+  currentPdfTrigger = trigger;
+  
+  const monthSelect = document.getElementById('pdf-month-select');
+  if (monthSelect) {
+    monthSelect.value = "9"; // default to Eylül (9)
+  }
+  
+  const weekSelect = document.getElementById('pdf-week-select');
+  if (weekSelect) {
+    weekSelect.value = "1";
+  }
+
+  pdfDateModal.showModal();
+}
+
+pdfDateModal?.querySelector('[data-action="cancel-pdf"]')?.addEventListener('click', () => {
+  pdfDateModal.close();
+});
+
+pdfDateForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const month = document.getElementById('pdf-month-select').value;
+  const week = document.getElementById('pdf-week-select').value;
+  pdfDateModal.close();
+
+  const url = `${currentPdfUrl}?month=${month}&week=${week}`;
+  await downloadPdf(url, { trigger: currentPdfTrigger });
+});
+
+document.getElementById('btn-export-pdf-teachers')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  openPdfDateModal('/pdf/teachers/all', e.currentTarget);
 });

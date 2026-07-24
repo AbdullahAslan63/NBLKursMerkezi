@@ -42,6 +42,22 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
     btn.addEventListener('click', toggleTheme);
   });
+
+  const burger = document.getElementById('navbar-burger');
+  const navbar = document.querySelector('.navbar');
+  if (burger && navbar) {
+    burger.addEventListener('click', () => {
+      const open = navbar.classList.toggle('navbar--open');
+      burger.setAttribute('aria-expanded', String(open));
+      
+      // Update Lucide icon
+      const icon = burger.querySelector('i');
+      if (icon) {
+        icon.setAttribute('data-lucide', open ? 'x' : 'menu');
+        refreshIcons();
+      }
+    });
+  }
 });
 
 export { applyTheme, toggleTheme, getPreferredTheme };

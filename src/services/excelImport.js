@@ -115,10 +115,11 @@ export function parseIog02005(buffer) {
 }
 
 /** Parse edilmiş satırları veritabanına upsert et */
-export async function importStudents(prisma, classId, parsed) {
+export async function importStudents(prisma, classId, className, parsed) {
   let added = 0;
   let updated = 0;
   let skipped = parsed.rowErrors.length;
+  const students = [];
 
   for (const row of parsed.rows) {
     const existing = await prisma.student.findUnique({
@@ -126,7 +127,7 @@ export async function importStudents(prisma, classId, parsed) {
     });
 
     if (existing) {
-      await prisma.student.update({
+      const s = await prisma.student.update({
         where: { id: existing.id },
         data: {
           firstName: row.firstName,
@@ -134,9 +135,17 @@ export async function importStudents(prisma, classId, parsed) {
           classId,
         },
       });
+      students.push({
+        id: s.id,
+        studentNumber: s.studentNumber,
+        firstName: s.firstName,
+        lastName: s.lastName,
+        classId: s.classId,
+        className,
+      });
       updated += 1;
     } else {
-      await prisma.student.create({
+      const s = await prisma.student.create({
         data: {
           studentNumber: row.studentNumber,
           firstName: row.firstName,
@@ -144,9 +153,17 @@ export async function importStudents(prisma, classId, parsed) {
           classId,
         },
       });
+      students.push({
+        id: s.id,
+        studentNumber: s.studentNumber,
+        firstName: s.firstName,
+        lastName: s.lastName,
+        classId: s.classId,
+        className,
+      });
       added += 1;
     }
   }
 
-  return { added, updated, skipped, rowErrors: parsed.rowErrors };
+  return { added, updated, skipped, rowErrors: parsed.rowErrors, students };
 }

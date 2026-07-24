@@ -3,37 +3,42 @@
     <h1>Öğretmenler</h1>
     <p>Etüt programına atanacak öğretmenleri yönetin</p>
   </div>
-  <button type="button" class="btn btn--primary" id="btn-add-teacher">Öğretmen Ekle</button>
+  <div class="page-toolbar__actions">
+    <button type="button" class="btn btn--secondary" id="btn-export-pdf-teachers">PDF İndir</button>
+    <button type="button" class="btn btn--primary" id="btn-add-teacher">Öğretmen Ekle</button>
+  </div>
 </div>
 
 <div class="search-box page-search">
   <input type="search" id="teacher-search" placeholder="Öğretmen ara..." aria-label="Öğretmen ara">
 </div>
 
-<div id="teachers-empty" class="empty-state card" style="<%= teachers.length ? 'display:none' : '' %>">
+<div id="teachers-empty" class="empty-state card" <% if (teachers.length) { %>style="display: none;"<% } %>>
   <h2>Henüz öğretmen yok</h2>
   <p>İlk öğretmeninizi ekleyerek etüt programını oluşturmaya başlayın.</p>
   <button type="button" class="btn btn--primary" data-action="add-teacher">Öğretmen Ekle</button>
 </div>
 
-<div id="teachers-table-wrap" style="<%= teachers.length ? '' : 'display:none' %>">
+<div id="teachers-table-wrap"   <% if (!teachers.length) { %>style="display: none;"<% } %>>
   <table class="data-table" id="teachers-table">
     <thead>
       <tr>
         <th>Ad</th>
+        <th>Branş</th>
         <th>Etüt</th>
         <th class="col-actions">İşlem</th>
       </tr>
     </thead>
     <tbody id="teachers-tbody">
       <% teachers.forEach(function(t) { %>
-        <tr data-id="<%= t.id %>" data-name="<%= t.name %>" data-search="<%= t.name.toLowerCase() %>">
+        <tr data-id="<%= t.id %>" data-name="<%= t.name %>" data-subject="<%= t.subject %>" data-search="<%= (t.name + ' ' + (t.subject || '')).toLowerCase() %>">
           <td><%= t.name %></td>
+          <td><span class="badge badge--subject"><%= t.subject || 'Belirtilmemiş' %></span></td>
           <td><span class="badge"><%= t.sessionCount %> etüt</span></td>
           <td class="col-actions">
-            <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/teachers/<%= t.id %>" aria-label="PDF indir" title="PDF indir">⬇</button>
-            <button type="button" class="btn btn--secondary btn--icon" data-action="edit" aria-label="Düzenle" title="Düzenle">✎</button>
-            <button type="button" class="btn btn--secondary btn--icon" data-action="delete" aria-label="Sil" title="Sil">✕</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="download-pdf" data-pdf-url="/pdf/teachers/<%= t.id %>" aria-label="PDF indir" data-tooltip="PDF indir">⬇</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="edit" aria-label="Düzenle" data-tooltip="Düzenle">✎</button>
+            <button type="button" class="btn btn--secondary btn--icon" data-action="delete" aria-label="Sil" data-tooltip="Sil">✕</button>
           </td>
         </tr>
       <% }); %>
@@ -49,11 +54,75 @@
       <input type="text" id="teacher-name" name="name" required autocomplete="off">
       <p class="form-field__error" id="teacher-name-error" hidden></p>
     </div>
+    <div class="form-field">
+      <label for="teacher-subject-select">Branş / Ders</label>
+      <select id="teacher-subject-select" name="subjectSelect">
+        <option value="">Seçiniz...</option>
+        <option value="Matematik">Matematik</option>
+        <option value="Geometri">Geometri</option>
+        <option value="Fizik">Fizik</option>
+        <option value="Kimya">Kimya</option>
+        <option value="Biyoloji">Biyoloji</option>
+        <option value="Türkçe">Türkçe</option>
+        <option value="Edebiyat">Edebiyat</option>
+        <option value="Tarih">Tarih</option>
+        <option value="Coğrafya">Coğrafya</option>
+        <option value="Felsefe">Felsefe</option>
+        <option value="Din Kültürü">Din Kültürü</option>
+        <option value="İngilizce">İngilizce</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="teacher-subject" style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: normal; margin-top: 4px;">Listede yoksa yeni branş adı girin:</label>
+      <input type="text" id="teacher-subject" name="subject" autocomplete="off" placeholder="örn. Bilişim">
+    </div>
     <div class="form-modal__actions">
       <button type="button" class="btn btn--secondary" data-action="cancel">İptal</button>
       <button type="submit" class="btn btn--primary">Kaydet</button>
     </div>
   </form>
 </dialog>
+
+<dialog id="pdf-date-modal" class="form-modal">
+  <form id="pdf-date-form" method="dialog">
+    <h2 style="margin: 0 0 var(--space-2); font-size: 1.25rem;">Program Dönemi Seçin</h2>
+    <p style="margin-bottom: var(--space-4); font-size: 0.875rem; color: var(--color-text-muted);">PDF çıktısı için ay ve hafta seçin:</p>
+    
+    <div class="form-field">
+      <label for="pdf-month-select">Ay</label>
+      <select id="pdf-month-select" name="month" class="form-select" style="width: 100%; padding: var(--space-2); border-radius: var(--radius-md); border: 1px solid var(--color-border); font-family: inherit;">
+        <option value="9">Eylül</option>
+        <option value="10">Ekim</option>
+        <option value="11">Kasım</option>
+        <option value="12">Aralık</option>
+        <option value="1">Ocak</option>
+        <option value="2">Şubat</option>
+        <option value="3">Mart</option>
+        <option value="4">Nisan</option>
+        <option value="5">Mayıs</option>
+        <option value="6">Haziran</option>
+        <option value="7">Temmuz</option>
+        <option value="8">Ağustos</option>
+      </select>
+    </div>
+    
+    <div class="form-field" style="margin-top: var(--space-3);">
+      <label for="pdf-week-select">Hafta</label>
+      <select id="pdf-week-select" name="week" class="form-select" style="width: 100%; padding: var(--space-2); border-radius: var(--radius-md); border: 1px solid var(--color-border); font-family: inherit;">
+        <option value="1">1. Hafta</option>
+        <option value="2">2. Hafta</option>
+        <option value="3">3. Hafta</option>
+        <option value="4">4. Hafta</option>
+        <option value="5">5. Hafta</option>
+      </select>
+    </div>
+    
+    <div class="form-modal__actions" style="margin-top: var(--space-5); display: flex; justify-content: flex-end; gap: var(--space-2);">
+      <button type="button" class="btn btn--secondary" data-action="cancel-pdf">İptal</button>
+      <button type="submit" class="btn btn--primary" id="btn-submit-pdf">İndir</button>
+    </div>
+  </form>
+</dialog>
+
 
 <script type="module" src="/js/teachers.js"></script>

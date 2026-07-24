@@ -1,0 +1,65 @@
+<%
+  // Simple hashing function to map teacher's name to a pastel color theme class
+  function getTeacherColorClass(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = ['blue', 'green', 'orange', 'purple', 'rose', 'amber'];
+    const color = colors[Math.abs(hash) % colors.length];
+    return `timeline-card--${color}`;
+  }
+
+  const cellKey = dayKey + ':' + startTime + ':' + endTime;
+  const cellData = cellMap[cellKey];
+  const hasSessions = cellData && cellData.count > 0;
+%>
+<div
+  class="timeline-row"
+  data-day="<%= dayKey %>"
+  data-start="<%= startTime %>"
+  data-end="<%= endTime %>"
+  data-session-count="<%= hasSessions ? cellData.count : 0 %>"
+>
+  <div class="timeline-row__time"><%= timeLabel %></div>
+  <div class="timeline-row__track">
+    <span class="timeline-row__dot<%= hasSessions ? ' timeline-row__dot--filled' : '' %>"></span>
+  </div>
+  <div class="timeline-row__content">
+    <% if (hasSessions) { %>
+      <% cellData.sessions.forEach(function(session) { %>
+        <button
+          type="button"
+          class="timeline-card <%= getTeacherColorClass(session.teacherName) %>"
+          data-day="<%= dayKey %>"
+          data-start="<%= startTime %>"
+          data-end="<%= endTime %>"
+          aria-label="<%= session.teacherName %> — <%= session.studentCount %> öğrenci"
+        >
+          <div class="timeline-card__body">
+            <span class="timeline-card__teacher">
+              <i data-lucide="graduation-cap" class="timeline-card__teacher-icon"></i>
+              <%= session.teacherName %>
+            </span>
+            <span class="timeline-card__students">
+              <i data-lucide="users" class="timeline-card__students-icon"></i>
+              <%= session.studentCount %> öğrenci
+            </span>
+          </div>
+        </button>
+      <% }); %>
+    <% } else { %>
+      <button
+        type="button"
+        class="timeline-empty"
+        data-day="<%= dayKey %>"
+        data-start="<%= startTime %>"
+        data-end="<%= endTime %>"
+        aria-label="Bu saate etüt ekle"
+      >
+        <i data-lucide="plus" class="timeline-empty__icon"></i>
+        <span>Etüt Ekle</span>
+      </button>
+    <% } %>
+  </div>
+</div>

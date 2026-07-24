@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { DAYS_OF_WEEK } from '../config/schedule.js';
+import {
+  DAYS_OF_WEEK,
+  getCalendarDetailsFromDate,
+  getDateFromCalendarDetails,
+} from '../config/schedule.js';
 import { requireFields } from '../middleware/validate.js';
 import { findStudentScheduleConflicts } from '../lib/sessionConflict.js';
 
@@ -22,6 +26,9 @@ export default function createSessionsRouter(prisma) {
   router.get('/panel', async (req, res, next) => {
     try {
       const { dayOfWeek, startTime, endTime } = req.query;
+      const month = req.query.month ? Number(req.query.month) : null;
+      const weekNumber = req.query.weekNumber ? Number(req.query.weekNumber) : null;
+      const isGlobalAdd = req.query.isGlobalAdd === 'true';
 
       if (!dayOfWeek || !startTime || !endTime || !isValidDayKey(dayOfWeek)) {
         return res.status(400).send('Geçersiz gün veya saat aralığı.');
@@ -29,7 +36,13 @@ export default function createSessionsRouter(prisma) {
 
       const [sessions, teachers, students] = await Promise.all([
         prisma.studySession.findMany({
-          where: { dayOfWeek, startTime, endTime },
+          where: {
+            dayOfWeek,
+            startTime,
+            endTime,
+            ...(month ? { month } : {}),
+            ...(weekNumber ? { weekNumber } : {}),
+          },
           include: {
             teacher: { select: { id: true, name: true } },
             students: { select: { studentId: true } },
@@ -51,18 +64,21 @@ export default function createSessionsRouter(prisma) {
         startTime,
         endTime,
         timeLabel: `${startTime}–${endTime}`,
+        isGlobalAdd,
         sessions: sessions.map((s) => ({
           id: s.id,
           teacherId: s.teacher.id,
           teacherName: s.teacher.name,
           studentCount: s._count.students,
           studentIds: s.students.map((link) => link.studentId),
+          startTime: s.startTime,
+          endTime: s.endTime,
         })),
         teachers,
         students: students.map((s) => ({
           id: s.id,
           label: `${s.firstName} ${s.lastName}`,
-          sublabel: `${s.studentNumber} · ${s.schoolClass.name}`,
+          sublabel: `${s.studentNumber} · ${s.schoolClass?.name || 'Sınıf Yok'}`,
         })),
       });
     } catch (err) {
@@ -80,15 +96,34 @@ export default function createSessionsRouter(prisma) {
         });
       }
 
-      const { dayOfWeek, startTime, endTime } = req.body;
+      const { dayOfWeek: dayBody, startTime, endTime } = req.body;
       const teacherId = Number(req.body.teacherId);
+      const monthBody = Number(req.body.month) || 9;
+      const weekNumberBody = Number(req.body.weekNumber) || 1;
+      let date = typeof req.body.date === 'string' ? req.body.date : '';
       const studentIds = Array.isArray(req.body.studentIds)
         ? req.body.studentIds.map(Number).filter((id) => Number.isInteger(id) && id > 0)
         : [];
 
-      if (!isValidDayKey(dayOfWeek)) {
+      if (!isValidDayKey(dayBody)) {
         return res.fail('VALIDATION_ERROR', 'Geçersiz gün.', { status: 400 });
       }
+
+      // Fallback date resolution if date is missing
+      if (!date) {
+        const currentYear = new Date().getFullYear();
+        date = getDateFromCalendarDetails(currentYear, monthBody, weekNumberBody, dayBody);
+      }
+
+      // Calculate details from date (single source of truth)
+      let calDetails;
+      try {
+        calDetails = getCalendarDetailsFromDate(date);
+      } catch (err) {
+        return res.fail('VALIDATION_ERROR', err.message, { status: 400 });
+      }
+
+      const { dayOfWeek, month, weekNumber } = calDetails;
 
       if (!Number.isInteger(teacherId) || teacherId < 1) {
         return res.fail('VALIDATION_ERROR', 'Geçerli bir öğretmen seçin.', {
@@ -114,6 +149,8 @@ export default function createSessionsRouter(prisma) {
         startTime,
         endTime,
         studentIds,
+        month,
+        weekNumber,
       });
 
       if (conflicts.length > 0) {
@@ -130,6 +167,9 @@ export default function createSessionsRouter(prisma) {
           dayOfWeek,
           startTime,
           endTime,
+          month,
+          weekNumber,
+          date,
           teacherId,
           students: {
             create: studentIds.map((studentId) => ({ studentId })),
@@ -143,6 +183,9 @@ export default function createSessionsRouter(prisma) {
           dayOfWeek: session.dayOfWeek,
           startTime: session.startTime,
           endTime: session.endTime,
+          month: session.month,
+          weekNumber: session.weekNumber,
+          date: session.date,
           teacherId: session.teacherId,
           studentIds,
         },
@@ -178,6 +221,34 @@ export default function createSessionsRouter(prisma) {
         ? req.body.studentIds.map(Number).filter((sid) => Number.isInteger(sid) && sid > 0)
         : [];
 
+      const dayBody = req.body.dayOfWeek || existing.dayOfWeek;
+      const startTime = req.body.startTime || existing.startTime;
+      const endTime = req.body.endTime || existing.endTime;
+
+      if (!isValidDayKey(dayBody)) {
+        return res.fail('VALIDATION_ERROR', 'Geçersiz gün.', { status: 400 });
+      }
+
+      let date = typeof req.body.date === 'string' ? req.body.date : existing.date;
+
+      // Fallback date resolution if date is missing
+      if (!date) {
+        const monthBody = Number(req.body.month) || existing.month || 9;
+        const weekNumberBody = Number(req.body.weekNumber) || existing.weekNumber || 1;
+        const currentYear = new Date().getFullYear();
+        date = getDateFromCalendarDetails(currentYear, monthBody, weekNumberBody, dayBody);
+      }
+
+      // Calculate details from date (single source of truth)
+      let calDetails;
+      try {
+        calDetails = getCalendarDetailsFromDate(date);
+      } catch (err) {
+        return res.fail('VALIDATION_ERROR', err.message, { status: 400 });
+      }
+
+      const { dayOfWeek, month, weekNumber } = calDetails;
+
       if (!Number.isInteger(teacherId) || teacherId < 1) {
         return res.fail('VALIDATION_ERROR', 'Geçerli bir öğretmen seçin.', {
           status: 400,
@@ -198,11 +269,13 @@ export default function createSessionsRouter(prisma) {
       }
 
       const conflicts = await findStudentScheduleConflicts(prisma, {
-        dayOfWeek: existing.dayOfWeek,
-        startTime: existing.startTime,
-        endTime: existing.endTime,
+        dayOfWeek,
+        startTime,
+        endTime,
         studentIds,
         excludeSessionId: id,
+        month,
+        weekNumber,
       });
 
       if (conflicts.length > 0) {
@@ -217,7 +290,15 @@ export default function createSessionsRouter(prisma) {
       await prisma.$transaction(async (tx) => {
         await tx.studySession.update({
           where: { id },
-          data: { teacherId },
+          data: {
+            teacherId,
+            dayOfWeek,
+            startTime,
+            endTime,
+            month,
+            weekNumber,
+            date,
+          },
         });
         await tx.studySessionStudent.deleteMany({ where: { studySessionId: id } });
         await tx.studySessionStudent.createMany({
@@ -228,9 +309,9 @@ export default function createSessionsRouter(prisma) {
       return res.success(
         {
           id,
-          dayOfWeek: existing.dayOfWeek,
-          startTime: existing.startTime,
-          endTime: existing.endTime,
+          dayOfWeek,
+          startTime,
+          endTime,
           teacherId,
           studentIds,
         },
@@ -255,6 +336,42 @@ export default function createSessionsRouter(prisma) {
 
       await prisma.studySession.delete({ where: { id } });
       return res.success({}, { message: 'Etüt silindi.' });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.get('/:id/details', async (req, res, next) => {
+    try {
+      const id = parseId(req.params.id);
+      if (!id) {
+        return res.status(404).send('Etüt bulunamadı.');
+      }
+
+      const session = await prisma.studySession.findUnique({
+        where: { id },
+        include: {
+          teacher: { select: { id: true, name: true, subject: true } },
+          students: {
+            include: {
+              student: {
+                include: {
+                  schoolClass: { select: { name: true } }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!session) {
+        return res.status(404).send('Etüt bulunamadı.');
+      }
+
+      res.render('partials/session-detail', {
+        layout: false,
+        session
+      });
     } catch (err) {
       next(err);
     }

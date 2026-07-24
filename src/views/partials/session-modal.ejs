@@ -1,89 +1,252 @@
 <div
-  class="session-modal"
+  class="session-modal<%= (typeof isGlobalAdd !== 'undefined' && isGlobalAdd) ? ' session-modal--create' : '' %>"
   data-day="<%= dayOfWeek %>"
   data-start="<%= startTime %>"
   data-end="<%= endTime %>"
 >
-  <h2 class="session-modal__title"><%= dayLabel %> · <%= timeLabel %></h2>
+  <% if (typeof isGlobalAdd !== 'undefined' && isGlobalAdd) { %>
+    <h2 class="session-modal__title">Yeni Etüt Ekle</h2>
+  <% } else { %>
+    <h2 class="session-modal__title"><%= dayLabel %> · <%= timeLabel %></h2>
 
-  <section class="session-modal__section" aria-label="Mevcut etütler">
-    <h3 class="session-modal__subtitle">Mevcut Etütler</h3>
-    <% if (!sessions || sessions.length === 0) { %>
-      <p class="session-modal__empty">Bu saatte henüz etüt yok.</p>
-    <% } else { %>
-      <ul class="session-list">
-        <% sessions.forEach(function(session) { %>
-          <li
-            class="session-list__item"
-            data-session-id="<%= session.id %>"
-            data-teacher-id="<%= session.teacherId %>"
-            data-student-ids="<%= session.studentIds.join(',') %>"
-          >
-            <span><%= session.teacherName %> — <%= session.studentCount %> öğrenci</span>
-            <span class="session-list__actions">
-              <button
-                type="button"
-                class="btn btn--secondary btn--icon"
-                data-action="edit-session"
-                aria-label="Düzenle"
-                title="Düzenle"
-              >✎</button>
-              <button
-                type="button"
-                class="btn btn--secondary btn--icon"
-                data-action="delete-session"
-                data-session-id="<%= session.id %>"
-                aria-label="Sil"
-                title="Sil"
-              >✕</button>
-            </span>
-          </li>
-        <% }); %>
-      </ul>
-    <% } %>
-  </section>
+    <section class="session-modal__section" aria-label="Mevcut etütler">
+      <h3 class="session-modal__subtitle">Mevcut Etütler</h3>
+      <% if (!sessions || sessions.length === 0) { %>
+        <p class="session-modal__empty">Bu saatte henüz etüt yok.</p>
+      <% } else { %>
+        <ul class="session-list">
+          <% sessions.forEach(function(session) { %>
+            <li
+              class="session-list__item"
+              data-session-id="<%= session.id %>"
+              data-teacher-id="<%= session.teacherId %>"
+              data-student-ids="<%= session.studentIds.join(',') %>"
+              data-start="<%= session.startTime %>"
+              data-end="<%= session.endTime %>"
+              data-day="<%= dayOfWeek %>"
+            >
+              <span><%= session.teacherName %> — <%= session.studentCount %> öğrenci</span>
+              <span class="session-list__actions">
+                <button
+                  type="button"
+                  class="btn btn--secondary btn--icon"
+                  data-action="edit-session"
+                  aria-label="Düzenle"
+                  data-tooltip="Düzenle"
+                >✎</button>
+                <button
+                  type="button"
+                  class="btn btn--secondary btn--icon"
+                  data-action="delete-session"
+                  data-session-id="<%= session.id %>"
+                  aria-label="Sil"
+                  data-tooltip="Sil"
+                >✕</button>
+              </span>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </section>
+  <% } %>
 
   <section class="session-modal__section" aria-label="Etüt formu">
-    <h3 class="session-modal__subtitle" id="session-form-title">Yeni Etüt Ekle</h3>
+    <div class="session-modal__form-header">
+      <% if (typeof isGlobalAdd !== 'undefined' && isGlobalAdd) { %>
+        <h3 class="session-modal__subtitle" id="session-form-title" style="display: none;">Yeni Etüt Ekle</h3>
+      <% } else { %>
+        <h3 class="session-modal__subtitle" id="session-form-title">Yeni Etüt Ekle</h3>
+      <% } %>
+      <div class="wizard-progress" aria-hidden="true">
+        <span class="wizard-progress__dot wizard-progress__dot--active" data-step-indicator="1">1</span>
+        <span class="wizard-progress__line"></span>
+        <span class="wizard-progress__dot" data-step-indicator="2">2</span>
+      </div>
+    </div>
 
     <% if (!teachers || teachers.length === 0) { %>
       <p class="session-modal__empty">Önce <a href="/teachers">öğretmen</a> ekleyin.</p>
     <% } else if (!students || students.length === 0) { %>
       <p class="session-modal__empty">Önce <a href="/students">öğrenci</a> ekleyin.</p>
     <% } else { %>
-      <form id="session-form" class="session-form">
-        <div class="form-field">
-          <span class="form-field__label">Öğretmen</span>
-          <div class="choice-grid" role="radiogroup" aria-label="Öğretmen seçimi">
-            <% teachers.forEach(function(teacher) { %>
-              <label class="choice-card">
-                <input type="radio" name="teacherId" value="<%= teacher.id %>">
-                <span><%= teacher.name %></span>
-              </label>
-            <% }); %>
+      <form id="session-form" class="session-form wizard">
+        <!-- Step 1: Select Teacher -->
+        <div class="wizard-step wizard-step--active" data-step="1">
+          <!-- Time Selection UI -->
+          <div class="form-field time-selection-card">
+            <span class="form-field__label">Etüt Saatleri</span>
+            
+            <% 
+              const startParts = (startTime || '09:00').split(':');
+              const startH = startParts[0];
+              const startM = startParts[1];
+              const endParts = (endTime || '10:00').split(':');
+              const endH = endParts[0];
+              const endM = endParts[1];
+            %>
+
+            <div class="digital-pickers-container">
+              <!-- Start Time Picker -->
+              <div class="digital-picker-card" id="start-time-picker" data-picker-type="start">
+                <span class="digital-picker-label">Başlangıç</span>
+                <input type="hidden" id="session-start-time" name="startTime" value="<%= startTime %>">
+                
+                <div class="digital-display">
+                  <!-- Hour Block -->
+                  <div class="digital-digit-group" data-unit="hours">
+                    <button type="button" class="stepper-btn stepper-btn--up" aria-label="Saati artır">
+                      <i data-lucide="chevron-up"></i>
+                    </button>
+                    <span class="digital-number digital-number--hours"><%= startH %></span>
+                    <button type="button" class="stepper-btn stepper-btn--down" aria-label="Saati azalt">
+                      <i data-lucide="chevron-down"></i>
+                    </button>
+                  </div>
+                  
+                  <div class="digital-colon">:</div>
+                  
+                  <!-- Minute Block -->
+                  <div class="digital-digit-group" data-unit="minutes">
+                    <button type="button" class="stepper-btn stepper-btn--up" aria-label="Dakikayı artır">
+                      <i data-lucide="chevron-up"></i>
+                    </button>
+                    <span class="digital-number digital-number--minutes"><%= startM %></span>
+                    <button type="button" class="stepper-btn stepper-btn--down" aria-label="Dakikayı azalt">
+                      <i data-lucide="chevron-down"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Quick Minute Pills -->
+                <div class="quick-minute-pills">
+                  <button type="button" class="minute-pill-btn" data-value="00">00</button>
+                  <button type="button" class="minute-pill-btn" data-value="15">15</button>
+                  <button type="button" class="minute-pill-btn" data-value="30">30</button>
+                  <button type="button" class="minute-pill-btn" data-value="45">45</button>
+                </div>
+              </div>
+
+              <!-- End Time Picker -->
+              <div class="digital-picker-card" id="end-time-picker" data-picker-type="end">
+                <span class="digital-picker-label">Bitiş</span>
+                <input type="hidden" id="session-end-time" name="endTime" value="<%= endTime %>">
+                
+                <div class="digital-display">
+                  <!-- Hour Block -->
+                  <div class="digital-digit-group" data-unit="hours">
+                    <button type="button" class="stepper-btn stepper-btn--up" aria-label="Saati artır">
+                      <i data-lucide="chevron-up"></i>
+                    </button>
+                    <span class="digital-number digital-number--hours"><%= endH %></span>
+                    <button type="button" class="stepper-btn stepper-btn--down" aria-label="Saati azalt">
+                      <i data-lucide="chevron-down"></i>
+                    </button>
+                  </div>
+                  
+                  <div class="digital-colon">:</div>
+                  
+                  <!-- Minute Block -->
+                  <div class="digital-digit-group" data-unit="minutes">
+                    <button type="button" class="stepper-btn stepper-btn--up" aria-label="Dakikayı artır">
+                      <i data-lucide="chevron-up"></i>
+                    </button>
+                    <span class="digital-number digital-number--minutes"><%= endM %></span>
+                    <button type="button" class="stepper-btn stepper-btn--down" aria-label="Dakikayı azalt">
+                      <i data-lucide="chevron-down"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Quick Minute Pills -->
+                <div class="quick-minute-pills">
+                  <button type="button" class="minute-pill-btn" data-value="00">00</button>
+                  <button type="button" class="minute-pill-btn" data-value="15">15</button>
+                  <button type="button" class="minute-pill-btn" data-value="30">30</button>
+                  <button type="button" class="minute-pill-btn" data-value="45">45</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="duration-chips-wrapper">
+              <span class="duration-chips-title">Hızlı Süre:</span>
+              <div class="duration-chips">
+                <button type="button" class="duration-chip" data-minutes="40">+40 Dk</button>
+                <button type="button" class="duration-chip" data-minutes="60">+60 Dk</button>
+                <button type="button" class="duration-chip" data-minutes="90">+90 Dk</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <span class="form-field__label">Öğretmen Seçin</span>
+            <div class="choice-grid" role="radiogroup" aria-label="Öğretmen seçimi">
+              <% teachers.forEach(function(teacher) { %>
+                <label class="choice-card">
+                  <input type="radio" name="teacherId" value="<%= teacher.id %>">
+                  <div class="choice-card__avatar">
+                    <i class="choice-card__icon" data-lucide="user"></i>
+                  </div>
+                  <span class="choice-card__name"><%= teacher.name %></span>
+                </label>
+              <% }); %>
+            </div>
           </div>
         </div>
 
-        <div class="form-field">
-          <span class="form-field__label">Öğrenciler</span>
-          <div class="choice-list" role="group" aria-label="Öğrenci seçimi">
-            <% students.forEach(function(student) { %>
-              <label class="choice-row">
-                <input type="checkbox" name="studentIds" value="<%= student.id %>">
-                <span class="choice-row__text">
-                  <span class="choice-row__main"><%= student.label %></span>
-                  <span class="choice-row__sub"><%= student.sublabel %></span>
-                </span>
-              </label>
-            <% }); %>
+        <!-- Step 2: Select Students -->
+        <div class="wizard-step" data-step="2">
+          <div class="form-field">
+            <span class="form-field__label">Öğrencileri Seçin</span>
+            
+            <!-- Smart Search -->
+            <div class="student-search-box">
+              <i class="student-search-box__icon" data-lucide="search"></i>
+              <input type="text" id="student-search-input" placeholder="Öğrenci adı veya numarası ara..." autocomplete="off">
+            </div>
+
+            <!-- Student Selection List -->
+            <div class="choice-list student-choice-list" role="group" aria-label="Öğrenci seçimi">
+              <% students.forEach(function(student) { %>
+                <label class="choice-row student-choice-row" data-search-text="<%= student.label.toLowerCase() %> <%= student.sublabel.toLowerCase() %>">
+                  <input type="checkbox" name="studentIds" value="<%= student.id %>" data-label="<%= student.label %>" data-sublabel="<%= student.sublabel %>">
+                  <span class="choice-row__checkbox-ui"></span>
+                  <span class="choice-row__text">
+                    <span class="choice-row__main"><%= student.label %></span>
+                    <span class="choice-row__sub"><%= student.sublabel %></span>
+                  </span>
+                </label>
+              <% }); %>
+            </div>
+          </div>
+
+          <p class="form-field__error" id="session-form-error" hidden></p>
+        </div>
+
+        <!-- Dedicated Selected Students Section (Visible clearly at the bottom) -->
+        <div class="selected-students-summary-section" id="selected-students-summary-wrap">
+          <span class="selected-students-summary-label">Seçilen Öğrenciler</span>
+          <span class="no-students-placeholder">Henüz öğrenci seçilmedi.</span>
+          <div class="selected-chips" id="selected-chips-container" aria-label="Seçilen öğrenciler">
+            <!-- Dynamically populated chips -->
           </div>
         </div>
 
-        <p class="form-field__error" id="session-form-error" hidden></p>
-
-        <div class="form-modal__actions">
-          <button type="button" class="btn btn--secondary" id="session-form-cancel-edit" hidden>İptal</button>
-          <button type="submit" class="btn btn--primary" id="session-form-submit">Etüt Kaydet</button>
+        <!-- Unified bottom action alignment strictly anchored at the bottom -->
+        <div class="session-modal-footer">
+          <!-- Step 1 Actions -->
+          <div class="wizard-footer-actions" data-step-actions="1">
+            <button type="button" class="btn btn--primary btn--full" data-action="next-step" disabled>Sonraki Adım</button>
+          </div>
+          
+          <!-- Step 2 Actions -->
+          <div class="wizard-footer-actions" data-step-actions="2" style="display: none;">
+            <button type="button" class="btn btn--secondary" data-action="prev-step">Geri</button>
+            <div class="wizard-actions__right">
+              <button type="button" class="btn btn--secondary" id="session-form-cancel-edit" hidden>İptal</button>
+              <button type="button" class="btn btn--danger" id="session-form-delete-btn" hidden>Sil</button>
+              <button type="submit" class="btn btn--primary" id="session-form-submit">Etüt Kaydet</button>
+            </div>
+          </div>
         </div>
       </form>
     <% } %>

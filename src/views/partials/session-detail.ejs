@@ -1,0 +1,51 @@
+<div class="session-detail-view" data-session-id="<%= session.id %>" data-teacher-id="<%= session.teacher.id %>" data-student-ids="<%= session.students.map(s => s.student.id).join(',') %>" data-day="<%= session.dayOfWeek %>" data-start="<%= session.startTime %>" data-end="<%= session.endTime %>">
+  <!-- Header: Subject Name in bold -->
+  <div class="session-detail-header">
+    <h2 class="session-detail-title"><%= session.teacher.subject || 'Ders Belirtilmemiş' %></h2>
+    <!-- Subtitle: Teacher's Name -->
+    <p class="session-detail-subtitle">
+      <i data-lucide="graduation-cap" class="session-detail-icon"></i>
+      <%= session.teacher.name %>
+    </p>
+    <div class="session-detail-time-badge">
+      <i data-lucide="clock" class="session-detail-icon"></i>
+      <%= session.startTime %> – <%= session.endTime %>
+    </div>
+  </div>
+
+  <!-- Content: Scrollable enrolled students section -->
+  <div class="session-detail-content">
+    <h3 class="session-detail-section-title">Katılan Öğrenciler (<%= session.students.length %>)</h3>
+    <div class="session-detail-students-list">
+      <% if (session.students.length === 0) { %>
+        <p class="session-detail-empty">Bu etüte henüz öğrenci eklenmemiş.</p>
+      <% } else { %>
+        <div class="student-profile-list">
+          <% session.students.forEach(function(link) { %>
+            <div class="student-profile-row">
+              <div class="student-profile-avatar">
+                <%= link.student.firstName[0] %><%= link.student.lastName[0] %>
+              </div>
+              <div class="student-profile-info">
+                <span class="student-profile-name"><%= link.student.firstName %> <%= link.student.lastName %></span>
+                <span class="student-profile-meta"><%= link.student.studentNumber %> · <%= link.student.schoolClass?.name || 'Sınıf Yok' %></span>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Footer Actions: Prominent Düzenle and Sil buttons anchored at the bottom -->
+  <div class="session-detail-footer">
+    <button type="button" class="btn btn--danger btn--lg" data-action="detail-delete" data-session-id="<%= session.id %>">
+      <i data-lucide="trash-2"></i>
+      <span>Sil</span>
+    </button>
+    <button type="button" class="btn btn--primary btn--lg" data-action="detail-edit" data-session-id="<%= session.id %>">
+      <i data-lucide="edit-3"></i>
+      <span>Düzenle</span>
+    </button>
+  </div>
+</div>

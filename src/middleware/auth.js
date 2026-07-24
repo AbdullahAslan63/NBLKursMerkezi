@@ -1,11 +1,8 @@
-/** Faz 7 öncesi devre dışı; prod'da zorunlu (§12.6) */
-
-const AUTH_ENABLED = process.env.AUTH_ENABLED === 'true';
-
 const PUBLIC_PATHS = new Set(['/login']);
 
 export function requireAuth(req, res, next) {
-  if (!AUTH_ENABLED || PUBLIC_PATHS.has(req.path)) {
+  const enabled = process.env.AUTH_ENABLED !== 'false';
+  if (!enabled || PUBLIC_PATHS.has(req.path)) {
     return next();
   }
 
@@ -26,7 +23,8 @@ export function requireAuth(req, res, next) {
 }
 
 export function redirectIfAuthenticated(req, res, next) {
-  if (!AUTH_ENABLED) {
+  const enabled = process.env.AUTH_ENABLED !== 'false';
+  if (!enabled) {
     return next();
   }
 

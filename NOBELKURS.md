@@ -17,8 +17,8 @@ Nobel Kurs Merkezi için web tabanlı etüt planlama ve takip sistemi. Kurs müd
 | Katman | Teknoloji | Not |
 |---|---|---|
 | Backend | Node.js + Express | |
-| ORM | Prisma | |
-| Veritabanı | PostgreSQL | |
+| ORM | Prisma + `@prisma/adapter-pg` / `@prisma/adapter-neon` | Driver adapter, Prisma v7; URL'ye göre otomatik seçim (`src/lib/prisma.js`) |
+| Veritabanı | PostgreSQL (`pg` veya Neon serverless) | `*.neon.tech` → Neon; diğer Postgres → `pg`; `PRISMA_ADAPTER=neon\|pg` ile zorlanabilir |
 | Template | EJS | Sayfa iskeleti + AJAX ile çekilen partial'lar |
 | İstemci etkileşimi | Vanilla JS (fetch) | Build tooling yok; v1'de Alpine.js kullanılmaz |
 | Oturum / auth | express-session + bcrypt | Tek kullanıcı; Faz 7, prod öncesi zorunlu |
@@ -50,6 +50,7 @@ enum DayOfWeek {
 model Teacher {
   id            Int            @id @default(autoincrement())
   name          String
+  subject       String         @default("")
   createdAt     DateTime       @default(now())
   studySessions StudySession[]
 }
@@ -74,29 +75,32 @@ model Student {
 }
 
 model StudySession {
-  id        Int       @id @default(autoincrement())
-  dayOfWeek DayOfWeek
-  startTime String    // "09:00"
-  endTime   String    // "10:00"
-  teacherId Int
-  teacher   Teacher   @relation(fields: [teacherId], references: [id])
-  students  StudySessionStudent[]
-  createdAt DateTime  @default(now())
+  id         Int                   @id @default(autoincrement())
+  dayOfWeek  String
+  startTime  String
+  endTime    String
+  month      Int                   @default(9)
+  weekNumber Int                   @default(1)
+  date       String                @default("")
+  teacherId  Int
+  teacher    Teacher               @relation(fields: [teacherId], references: [id])
+  students   StudySessionStudent[]
+  createdAt  DateTime              @default(now())
 }
 
 model StudySessionStudent {
   studySessionId Int
   studentId      Int
-  studySession   StudySession @relation(fields: [studySessionId], references: [id])
-  student        Student      @relation(fields: [studentId], references: [id])
+  studySession   StudySession @relation(fields: [studySessionId], references: [id], onDelete: Cascade)
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
   @@id([studySessionId, studentId])
 }
 ```
 
 **Notlar:**
-- **Program modeli:** Tekrarlayan haftalık şablon. `StudySession` tarih içermez; yalnızca `dayOfWeek` + saat aralığı. Her hafta aynı program geçerlidir; takvim haftası veya dönem arşivi yoktur.
+- **Program modeli:** Ay ve hafta bazlı dinamik takvim. `StudySession` `month` (ay), `weekNumber` (hafta) ve `date` (tarih) alanlarını içerir.
 - Saat aralıkları (`09.00-10.00` vb.) ayrı bir DB tablosu değil, `config/schedule.js` içinde sabit dizi olarak tutulur. Değişiklik gerekirse tek yerden yönetilir.
-- Aynı gün+saat hücresinde birden fazla öğretmenin farklı etüt oturumu olabilir — hücreye tıklanınca o gün/saatteki tüm `StudySession` kayıtları listelenir, yenisi eklenebilir.
+- Aynı gün+saat hücresinde birden fazla etüt oturumu olabilir — hücreye tıklanınca o gün/saatteki tüm `StudySession` kayıtları listelenir, yenisi eklenebilir.
 - `studentNumber` unique — excel içe aktarmada upsert anahtarı olarak kullanılır (bkz. §10).
 - **Sınıf (`SchoolClass`):** Her öğrencinin bir sınıfı vardır (`classId` zorunlu). IOG02005 dosyasında sınıf kolonu yoktur; içe aktarma veya manuel eklemede hedef sınıf belirlenir (bkz. §10). Öğrenci düzenlemeden sınıf değiştirilebilir. Öğrencisi olan sınıf silinemez.
 - **Öğretmen silme:** Bağlı `StudySession` kaydı varsa silme **engellenir**; kullanıcıya etüt sayısı ile birlikte anlaşılır hata mesajı gösterilir (cascade yok).
@@ -114,7 +118,10 @@ GET  /login                     Giriş sayfası (Faz 7) — HTML
 POST /login                     Oturum aç — form POST, redirect veya JSON hata
 POST /logout                    Oturum kapat — redirect
 
+GET  /api/calendar              Dinamik takvim günleri ve etüt verileri — JSON
+GET  /api/calendar/weeks        Belirli ayın takvim haftaları — JSON
 GET  /api/sessions/panel        Belirli gün+saat için modal içeriği — HTML partial
+GET  /api/sessions/:id/details  Etüt detay görünümü — HTML partial
 POST /api/sessions              Yeni etüt oluştur — JSON
 PUT  /api/sessions/:id          Etüt düzenle — JSON
 DELETE /api/sessions/:id        Etüt sil — JSON
@@ -211,8 +218,8 @@ tests/
 | 4 | Hücre tıklama → modal (§11 oturum paneli ve form) | Tamamlandı |
 | 5 | Etüt düzenleme/silme (modal üzerinden) | Tamamlandı |
 | 6 | PDF export (4 varyant — §11 baskı dostu şablon) | Tamamlandı |
-| 7 | Admin login (tek kullanıcı, session+bcrypt), yedekleme, prod deploy (§8) | Planlandı |
-| 8 | Koyu/açık tema geçişi (§11 renk token'ları, localStorage) | Planlandı |
+| 7 | Admin login (tek kullanıcı, session+bcrypt), yedekleme, prod deploy (§8) | Tamamlandı |
+| 8 | Koyu/açık tema geçişi (§11 renk token'ları, localStorage) | Tamamlandı |
 | 9+ | Genişletilebilir modüller (bildirim, raporlama dışa aktarma, vb.) | Kapsam dışı — ileride değerlendirilecek |
 
 ---

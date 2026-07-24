@@ -34,11 +34,12 @@ describe('CRUD integration', () => {
     const res = await request(app)
       .post('/teachers')
       .set('Accept', 'application/json')
-      .send({ name: 'Ayşe Yılmaz' });
+      .send({ name: 'Ayşe Yılmaz', subject: 'Matematik' });
 
     assert.equal(res.status, 201);
     assert.equal(res.body.ok, true);
     assert.equal(res.body.data.name, 'Ayşe Yılmaz');
+    assert.equal(res.body.data.subject, 'Matematik');
   });
 
   test('bağlı etüt varken öğretmen silme → 409 TEACHER_HAS_SESSIONS', async (t) => {

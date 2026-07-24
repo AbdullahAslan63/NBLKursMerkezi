@@ -1,101 +1,602 @@
-/* Sayfa özel stilleri */
+/* Program — Mobile-first timeline tasarımı */
 
-/* Program ızgarası — Faz 3 vitrin */
-.schedule-grid-wrapper {
-  overflow-x: auto;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-  background: var(--color-surface);
-}
-
-.schedule-grid {
-  width: 100%;
-  min-width: 900px;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.schedule-grid th,
-.schedule-grid td {
-  border: 1px solid var(--color-border);
-  vertical-align: middle;
-}
-
-.schedule-grid thead th {
-  padding: var(--space-3) var(--space-2);
-  font-weight: 600;
+/* ── Sayfa Alt Başlığı ── */
+.page-header__subtitle {
   font-size: 0.875rem;
-  text-align: center;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ── Takvim Navigasyonu ── */
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.calendar-nav__selectors {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-end;
+  flex: 1;
+  min-width: 0;
+}
+
+.calendar-nav__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.calendar-nav__label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.calendar-nav__label-icon {
+  width: 12px;
+  height: 12px;
+  opacity: 0.6;
+}
+
+.calendar-nav__select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: var(--space-2) var(--space-6) var(--space-2) var(--space-3);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
   background: var(--color-bg);
-  color: var(--color-primary);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-width: 140px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
 }
 
-.schedule-grid thead th.schedule-grid__today {
-  background: var(--color-today-bg);
-  box-shadow: inset 0 -3px 0 var(--color-accent);
+.calendar-nav__select:hover {
+  border-color: var(--color-primary);
 }
 
-.schedule-grid__time-col {
-  width: 110px;
-  padding: var(--space-3) var(--space-3);
+.calendar-nav__select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.12);
+}
+
+.calendar-nav__period {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   font-size: 0.8125rem;
   color: var(--color-text-muted);
-  background: var(--color-bg);
   font-weight: 500;
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
   white-space: nowrap;
 }
 
-.schedule-cell {
-  height: 56px;
-  padding: var(--space-2);
-  text-align: center;
+.calendar-nav__period-icon {
+  display: flex;
+  align-items: center;
+}
+
+.calendar-nav__period-icon svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+}
+
+/* ── Gün Pill Tarih Alt Etiketi ── */
+.day-selector__date {
+  font-size: 0.625rem;
+  font-weight: 500;
+  opacity: 0.65;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.day-selector__pill--active .day-selector__date {
+  opacity: 0.9;
+}
+
+/* ── Timeline Yükleniyor Durumu ── */
+.timelines-loading {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .calendar-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .calendar-nav__selectors {
+    flex-direction: row;
+    gap: var(--space-2);
+  }
+
+  .calendar-nav__select {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .calendar-nav__period {
+    justify-content: center;
+  }
+}
+
+/* ── Gün Seçici ── */
+.day-selector {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: var(--space-1) 0 var(--space-3);
+  margin-bottom: var(--space-4);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.day-selector::-webkit-scrollbar {
+  display: none;
+}
+
+.day-selector__pill {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-4);
+  min-width: 64px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  transition: all var(--transition-fast);
+  scroll-snap-align: center;
   position: relative;
 }
 
-.schedule-cell:hover {
-  background: var(--color-bg);
-  box-shadow: inset 0 0 0 1px var(--color-primary);
-}
-
-.schedule-cell--today {
+.day-selector__pill:hover {
+  border-color: var(--color-primary);
   background: var(--color-today-bg);
 }
 
-.schedule-cell--filled {
-  background: var(--color-surface);
+.day-selector__pill--active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.3);
 }
 
-.schedule-cell--filled::before {
+.day-selector__pill--active:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* Bugün vurgusu — aktif olmadığında alt nokta */
+.day-selector__pill--today:not(.day-selector__pill--active)::after {
   content: '';
   position: absolute;
-  left: 0;
-  top: var(--space-2);
-  bottom: var(--space-2);
-  width: 3px;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
   background: var(--color-accent);
-  border-radius: 0 2px 2px 0;
 }
 
-.schedule-cell--filled:hover {
-  background: var(--color-accent-muted);
+.day-selector__short {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.2;
 }
 
-.schedule-cell__badge {
-  display: inline-block;
+.day-selector__full {
+  font-size: 0.6875rem;
+  opacity: 0.7;
+  letter-spacing: 0.02em;
 }
 
-.schedule-cell__empty-hint {
-  font-size: 0.75rem;
+.day-selector__pill--active .day-selector__full {
+  opacity: 0.85;
+}
+
+/* ── Timeline Panel ── */
+.day-timeline {
+  max-width: 680px;
+}
+
+.day-timeline:not(.day-timeline--active) {
+  /* JS hidden attr ile gizleniyor, fallback */
+  display: none;
+}
+
+/* ── Timeline Satırı ── */
+.timeline-row {
+  display: grid;
+  grid-template-columns: 72px 24px 1fr;
+  gap: 0 var(--space-3);
+  align-items: start;
+  min-height: 68px;
+  position: relative;
+  padding-bottom: var(--space-2);
+}
+
+/* Dikey çizgi (satırlar arası bağlantı) */
+.timeline-row::before {
+  content: '';
+  position: absolute;
+  left: calc(72px + var(--space-3) + 11px);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-border);
+  z-index: 0;
+}
+
+/* Son satırda çizgiyi gizle */
+.timeline-row:last-child::before {
+  display: none;
+}
+
+/* Saat etiketi */
+.timeline-row__time {
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--color-text-muted);
-  opacity: 0;
-  transition: opacity var(--transition-fast);
+  padding-top: var(--space-3);
+  text-align: right;
+  white-space: nowrap;
+  line-height: 1;
 }
 
-.schedule-cell:hover .schedule-cell__empty-hint {
-  opacity: 1;
+/* Düğüm noktası track */
+.timeline-row__track {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-3);
+  position: relative;
+  z-index: 1;
+}
+
+.timeline-row__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.timeline-row__dot--filled {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+/* İçerik alanı */
+.timeline-row__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.timeline-cards-row {
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: var(--space-3) !important;
+}
+
+/* ── Etüt Kartı ── */
+.timeline-card {
+  display: flex;
+  flex: 1 1 240px;
+  max-width: 320px;
+  width: auto;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--color-text);
+  text-align: left;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast),
+    border-color var(--transition-fast), background var(--transition-fast);
+}
+
+@media (max-width: 576px) {
+  .timeline-card {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+.timeline-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
+}
+
+.timeline-card:active {
+  transform: translateY(-0.5px);
+}
+
+.timeline-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.timeline-card__subject {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.timeline-card__teacher {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.75;
+  line-height: 1.3;
+}
+
+.timeline-card__teacher-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.timeline-card__students {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.8;
+  line-height: 1.2;
+}
+
+.timeline-card__students-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+/* Pastel Renk Temaları — Açık Tema */
+.timeline-card--blue {
+  background: #f0f9ff;
+  border-color: #e0f2fe;
+  border-left-color: #0284c7;
+  color: #0369a1;
+}
+.timeline-card--blue .timeline-card__teacher-icon,
+.timeline-card--blue .timeline-card__students-icon {
+  color: #0284c7;
+}
+
+.timeline-card--green {
+  background: #f0fdf4;
+  border-color: #dcfce7;
+  border-left-color: #16a34a;
+  color: #15803d;
+}
+.timeline-card--green .timeline-card__teacher-icon,
+.timeline-card--green .timeline-card__students-icon {
+  color: #16a34a;
+}
+
+.timeline-card--orange {
+  background: #fff7ed;
+  border-color: #ffedd5;
+  border-left-color: #ea580c;
+  color: #c2410c;
+}
+.timeline-card--orange .timeline-card__teacher-icon,
+.timeline-card--orange .timeline-card__students-icon {
+  color: #ea580c;
+}
+
+.timeline-card--purple {
+  background: #faf5ff;
+  border-color: #f3e8ff;
+  border-left-color: #9333ea;
+  color: #7e22ce;
+}
+.timeline-card--purple .timeline-card__teacher-icon,
+.timeline-card--purple .timeline-card__students-icon {
+  color: #9333ea;
+}
+
+.timeline-card--rose {
+  background: #fff5f5;
+  border-color: #ffe4e6;
+  border-left-color: #e11d48;
+  color: #be123c;
+}
+.timeline-card--rose .timeline-card__teacher-icon,
+.timeline-card--rose .timeline-card__students-icon {
+  color: #e11d48;
+}
+
+.timeline-card--amber {
+  background: #fefdf0;
+  border-color: #fef3c7;
+  border-left-color: #d97706;
+  color: #b45309;
+}
+.timeline-card--amber .timeline-card__teacher-icon,
+.timeline-card--amber .timeline-card__students-icon {
+  color: #d97706;
+}
+
+/* Pastel Renk Temaları — Koyu Tema Overrides */
+[data-theme="dark"] .timeline-card--blue {
+  background: rgba(2, 132, 199, 0.12);
+  border-color: rgba(2, 132, 199, 0.25);
+  border-left-color: #38bdf8;
+  color: #e0f2fe;
+}
+[data-theme="dark"] .timeline-card--blue .timeline-card__teacher-icon,
+[data-theme="dark"] .timeline-card--blue .timeline-card__students-icon {
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .timeline-card--green {
+  background: rgba(22, 163, 74, 0.12);
+  border-color: rgba(22, 163, 74, 0.25);
+  border-left-color: #4ade80;
+  color: #f0fdf4;
+}
+[data-theme="dark"] .timeline-card--green .timeline-card__teacher-icon,
+[data-theme="dark"] .timeline-card--green .timeline-card__students-icon {
+  color: #4ade80;
+}
+
+[data-theme="dark"] .timeline-card--orange {
+  background: rgba(234, 88, 12, 0.12);
+  border-color: rgba(234, 88, 12, 0.25);
+  border-left-color: #fb923c;
+  color: #fff7ed;
+}
+[data-theme="dark"] .timeline-card--orange .timeline-card__teacher-icon,
+[data-theme="dark"] .timeline-card--orange .timeline-card__students-icon {
+  color: #fb923c;
+}
+
+[data-theme="dark"] .timeline-card--purple {
+  background: rgba(146, 51, 234, 0.12);
+  border-color: rgba(146, 51, 234, 0.25);
+  border-left-color: #c084fc;
+  color: #faf5ff;
+}
+[data-theme="dark"] .timeline-card--purple .timeline-card__teacher-icon,
+[data-theme="dark"] .timeline-card--purple .timeline-card__students-icon {
+  color: #c084fc;
+}
+
+[data-theme="dark"] .timeline-card--rose {
+  background: rgba(225, 29, 72, 0.12);
+  border-color: rgba(225, 29, 72, 0.25);
+  border-left-color: #fb7185;
+  color: #fff5f5;
+}
+[data-theme="dark"] .timeline-card--rose .timeline-card__teacher-icon,
+[data-theme="dark"] .timeline-card--rose .timeline-card__students-icon {
+  color: #fb7185;
+}
+
+[data-theme="dark"] .timeline-card--amber {
+  background: rgba(217, 119, 6, 0.12);
+  border-color: rgba(217, 119, 6, 0.25);
+  border-left-color: #fbbf24;
+  color: #fefdf0;
+}
+[data-theme="dark"] .timeline-card--amber .timeline-card__teacher-icon,
+[data-theme="dark"] .timeline-card--amber .timeline-card__students-icon {
+  color: #fbbf24;
+}
+
+/* ── Boş Durum ── */
+.timeline-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.timeline-empty:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-today-bg);
+}
+
+.timeline-empty__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (min-width: 768px) {
+  .day-selector {
+    justify-content: center;
+    gap: var(--space-3);
+  }
+
+  .day-selector__pill {
+    min-width: 76px;
+    padding: var(--space-2) var(--space-5);
+  }
+
+  .day-timeline {
+    margin: 0 auto;
+  }
+
+  .timeline-row {
+    grid-template-columns: 88px 28px 1fr;
+    min-height: 76px;
+  }
+
+  .timeline-row::before {
+    left: calc(88px + var(--space-3) + 13px);
+  }
+
+  .timeline-row__time {
+    font-size: 0.875rem;
+  }
 }
 
 .page-toolbar {
@@ -105,6 +606,26 @@
   gap: var(--space-4);
   margin-bottom: var(--space-4);
   flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+  .page-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+  .page-toolbar h1 {
+    font-size: 1.25rem !important;
+  }
+  .page-toolbar p {
+    font-size: 0.8125rem !important;
+  }
+  .page-toolbar__actions {
+    width: 100%;
+  }
+  .page-toolbar__actions .btn {
+    width: 100%;
+  }
 }
 
 .page-toolbar h1 {
@@ -167,6 +688,8 @@
   max-width: 480px;
   width: calc(100% - var(--space-6));
   box-shadow: var(--shadow-md);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .form-modal::backdrop {
@@ -426,3 +949,1129 @@
   background: var(--color-accent-muted);
   font-size: 0.875rem;
 }
+
+/* ── Bottom Sheet & Wizard Styles ── */
+
+@keyframes modal-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Base Modal Overrides */
+.schedule-modal-dialog {
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: max-width var(--transition-normal);
+}
+
+.schedule-modal-dialog__body {
+  padding: 0 var(--space-5) var(--space-5);
+  max-height: 78vh;
+  overflow-y: auto;
+}
+
+/* Table wrappers for horizontal scroll */
+#students-table-wrap,
+#teachers-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .data-table {
+    min-width: 600px;
+  }
+  
+  .timeline-cards-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+
+  .timeline-card {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
+
+/* Mobile Bottom Sheet Layout */
+@media (max-width: 767px) {
+  .schedule-modal-dialog:not([open]),
+  .form-modal:not([open]) {
+    display: none !important;
+  }
+
+  .schedule-modal-dialog[open],
+  .form-modal[open] {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 50vh !important;
+    height: 75vh !important;
+    max-height: 85vh !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    animation: modal-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .schedule-modal-dialog__header {
+    padding: var(--space-3) var(--space-4) 0;
+    /* Touch bar indicator for bottom sheet look */
+    position: relative;
+  }
+  
+  .schedule-modal-dialog__header::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 999px;
+  }
+
+  /* Form modal drag indicator */
+  .form-modal::before {
+    content: '';
+    display: block;
+    margin: 8px auto 0;
+    width: 36px;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 999px;
+  }
+
+  .schedule-modal-dialog__body,
+  .form-modal form {
+    padding: var(--space-2) var(--space-4) var(--space-5);
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+/* Wizard Header / Progress UI */
+.session-modal__form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.session-modal__form-header h3 {
+  margin: 0;
+}
+
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.wizard-progress__dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.wizard-progress__dot--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--color-today-bg);
+}
+
+.wizard-progress__line {
+  width: 16px;
+  height: 2px;
+  background: var(--color-border);
+}
+
+/* Wizard step container transitions */
+.wizard-step {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.wizard-step--active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-4);
+  gap: var(--space-2);
+}
+
+/* When only Next button is visible in step 1 */
+.wizard-step[data-step="1"] .wizard-actions {
+  justify-content: flex-end;
+}
+
+.wizard-actions__right {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Selectable Teacher Cards UI */
+.wizard-step[data-step="1"] .choice-grid {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: var(--space-2);
+}
+
+.wizard-step[data-step="1"] .choice-card {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-4) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.wizard-step[data-step="1"] .choice-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.wizard-step[data-step="1"] .choice-card input[type="radio"] {
+  display: none;
+}
+
+.choice-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-fast);
+}
+
+.choice-card:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-today-bg);
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.05);
+}
+
+.choice-card:has(input:checked) .choice-card__avatar {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.choice-card__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+/* Smart Search Input inside Modal */
+.student-search-box {
+  position: relative;
+  margin-bottom: var(--space-3);
+  width: 100%;
+}
+
+.student-search-box input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3) var(--space-2) 38px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.student-search-box input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-today-bg);
+}
+
+.student-search-box__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+/* Selected Students Chips UI */
+.selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  min-height: 28px;
+}
+
+.student-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-accent-muted);
+  color: var(--color-primary);
+  border: 1px solid rgba(201, 162, 39, 0.25);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  animation: chip-fade-in var(--transition-fast);
+}
+
+@keyframes chip-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.student-chip__remove {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+}
+
+.student-chip__remove:hover {
+  background: var(--color-accent);
+  color: #1a1a2e;
+}
+
+/* Custom Checkbox Row selection effect */
+.student-choice-list {
+  max-height: 200px;
+}
+
+/* .form-field label { display:block } üstüne yaz — checkbox solda, metin sağda */
+.form-field .student-choice-row {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 0;
+  font-weight: inherit;
+  font-size: inherit;
+  transition: background var(--transition-fast);
+}
+
+.student-choice-row input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.form-field .student-choice-row .choice-row__checkbox-ui {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  flex-shrink: 0;
+  margin: 0;
+  transition: all var(--transition-fast);
+}
+
+.form-field .student-choice-row .choice-row__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.student-choice-row:hover .choice-row__checkbox-ui {
+  border-color: var(--color-primary);
+}
+
+.student-choice-row--selected {
+  background: var(--color-today-bg);
+}
+
+.student-choice-row--selected .choice-row__checkbox-ui {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.student-choice-row--selected .choice-row__checkbox-ui::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ── Zaman Seçici & Süre Butonları Stilleri ── */
+.time-selection-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  margin-bottom: var(--space-4);
+}
+
+.digital-pickers-container {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .digital-pickers-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .digital-picker-card {
+    max-width: 260px !important;
+    width: 100%;
+  }
+}
+
+.digital-picker-card {
+  flex: 1;
+  max-width: 180px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all var(--transition-fast) ease;
+}
+
+.digital-picker-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+
+.digital-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.digital-digit-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stepper-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast) ease;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  color: #00d2ff;
+  background: rgba(0, 210, 255, 0.05);
+}
+
+.stepper-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.digital-number {
+  font-family: monospace, inherit;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast) ease;
+  user-select: none;
+}
+
+[data-theme="dark"] .digital-number {
+  color: #e0f2fe;
+  text-shadow: 0 0 2px rgba(0, 210, 255, 0.2);
+}
+
+.digital-picker-card:not(.digital-picker-card--disabled) .digital-number:hover {
+  color: #00d2ff;
+  text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
+}
+
+.digital-number--focused {
+  color: #00d2ff !important;
+  text-shadow: 0 0 12px rgba(0, 210, 255, 0.8) !important;
+  transform: scale(1.05);
+}
+
+.digital-colon {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #00d2ff;
+  line-height: 1;
+  margin-bottom: 2px;
+  user-select: none;
+  text-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
+}
+
+.quick-minute-pills {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.minute-pill-btn {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 0;
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+}
+
+.minute-pill-btn:hover:not(:disabled) {
+  border-color: #00d2ff;
+  color: #fff;
+  background: rgba(0, 210, 255, 0.05);
+}
+
+.minute-pill-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.digital-picker-card--disabled {
+  opacity: 0.55;
+}
+
+.digital-picker-card--disabled .stepper-btn,
+.digital-picker-card--disabled .minute-pill-btn {
+  cursor: not-allowed;
+}
+
+
+/* Quick Duration Chips */
+.duration-chips-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 2px;
+  border-top: 1px dashed var(--color-border);
+  padding-top: var(--space-2);
+}
+
+.duration-chips-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.duration-chips {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.duration-chip {
+  padding: var(--space-1) var(--space-2);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.duration-chip:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.duration-chip:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.duration-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  color: var(--color-text-muted);
+}
+
+/* ── Floating Action Button (FAB) ── */
+.fab-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(30, 58, 95, 0.35);
+  cursor: pointer;
+  z-index: 50;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.fab-btn.fab-btn--hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5) translateY(20px);
+}
+
+/* Center empty state button styling */
+.btn--center-add {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.3), 
+              0 4px 12px rgba(37, 99, 235, 0.15);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.2s ease,
+              box-shadow 0.25s ease;
+}
+
+.btn--center-add:hover {
+  transform: scale(1.05);
+  background: var(--color-primary-hover, #2563eb);
+  box-shadow: 0 0 24px rgba(37, 99, 235, 0.6), 
+              0 6px 20px rgba(37, 99, 235, 0.3);
+}
+
+.btn--center-add:active {
+  transform: scale(0.98);
+}
+
+.btn--center-add__icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5px;
+}
+
+.fab-btn:hover {
+  transform: scale(1.08);
+  background: #254a75;
+  box-shadow: 0 6px 20px rgba(30, 58, 95, 0.45);
+}
+
+.fab-btn:active {
+  transform: scale(0.95);
+}
+
+.fab-btn__icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* ── Agenda Empty State ── */
+.agenda-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  max-width: 320px;
+  margin: var(--space-6) auto 0;
+  animation: agenda-fade-in var(--transition-normal) ease-out;
+}
+
+@keyframes agenda-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.agenda-empty-state__icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.agenda-empty-state__icon {
+  width: 28px;
+  height: 28px;
+  opacity: 0.8;
+}
+
+.agenda-empty-state__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2);
+}
+
+.agenda-empty-state__text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Agenda timeline layout enhancements */
+.agenda-timeline-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin-top: var(--space-4);
+}
+
+.agenda-row {
+  margin-bottom: 0;
+}
+
+/* ── Sınıf Filtreleme Çipleri Stilleri ── */
+.filter-chips-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: var(--space-1) 0 var(--space-2) 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filter-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease-out;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.filter-chip:hover {
+  border-color: var(--color-primary);
+  color: #f8fafc;
+  background: #273549;
+  transform: translateY(-1px);
+}
+
+.filter-chip--active {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.35);
+  font-weight: 700;
+}
+
+.filter-chip:active {
+  transform: scale(0.96) translateY(0);
+}
+
+/* ── Öğrenci Satır Geçiş Animasyonları ── */
+.row-fade-in {
+  animation: student-row-fade-in 0.35s ease forwards;
+}
+
+@keyframes student-row-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.row-fade-out {
+  opacity: 0 !important;
+  transform: translateX(-16px) !important;
+  transition: opacity 0.3s ease, transform 0.3s ease !important;
+}
+
+/* ── Custom Wizard Buttons ── */
+#session-form-cancel-edit {
+  background: transparent !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--space-2) var(--space-4) !important;
+  font-weight: 600 !important;
+  transition: all var(--transition-fast) ease !important;
+}
+
+#session-form-cancel-edit:hover {
+  border-color: var(--color-text) !important;
+  color: var(--color-text) !important;
+  background: var(--color-bg) !important;
+}
+
+#session-form-submit {
+  background: #0070f3 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--space-2) var(--space-5) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(0, 112, 243, 0.3) !important;
+  transition: all var(--transition-fast) ease !important;
+}
+
+#session-form-submit:hover {
+  background: #0060df !important;
+  box-shadow: 0 6px 20px rgba(0, 112, 243, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+#session-form-submit:active {
+  transform: translateY(0) !important;
+}
+
+/* ── Etüt Detay Görünümü CSS ── */
+.session-detail-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+}
+
+.session-detail-header {
+  border-bottom: 1.5px solid var(--color-border);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-1);
+}
+
+.session-detail-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0 0 var(--space-2) 0;
+  line-height: 1.25;
+}
+
+.session-detail-subtitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.session-detail-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.session-detail-time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+}
+
+.session-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.session-detail-section-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.session-detail-students-list {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  padding: var(--space-1);
+}
+
+.session-detail-empty {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+  padding: var(--space-4) 0;
+  margin: 0;
+}
+
+.student-profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.student-profile-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.student-profile-row:hover {
+  background: rgba(30, 58, 95, 0.04);
+}
+
+.student-profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.student-profile-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.student-profile-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-profile-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.session-detail-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1.5px solid var(--color-border);
+}
+
+.session-detail-footer .btn--lg {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+}
+
+/* ── Wizard Seçilen Öğrenciler ve Sabit Footer Alanları ── */
+.selected-students-summary-section {
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.selected-students-summary-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.no-students-placeholder {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.session-modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-surface);
+  padding-top: var(--space-4);
+  border-top: 1.5px solid var(--color-border);
+  margin-top: var(--space-4);
+  z-index: 100;
+}
+
+.wizard-footer-actions {
+  display: flex;
+  width: 100%;
+}
+
+.btn--full {
+  width: 100%;
+  justify-content: center;
+}
+
+.wizard-actions__right {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.session-modal--editing > section[aria-label="Mevcut etütler"] {
+  display: none !important;
+}
+
+
+
+
+
+
+

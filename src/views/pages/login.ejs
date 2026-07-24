@@ -1,15 +1,79 @@
 <div class="auth-page">
-  <div class="auth-card card">
-    <div class="page-header" style="text-align: center;">
-      <h1>Giriş Yap</h1>
-      <p>Nobel Kurs Merkezi Etüt Sistemi</p>
+  <div class="card auth-card">
+    <div class="auth-logo-section">
+      <span class="auth-logo" aria-hidden="true">NK</span>
+      <h1><%= appName %></h1>
+      <p>Yönetici Paneli Girişi</p>
     </div>
-    <form method="post" action="/login">
+    <form id="login-form">
+      <div class="form-field">
+        <label for="username">Kullanıcı Adı</label>
+        <input type="text" id="username" name="username" required autocomplete="username" placeholder="Kullanıcı adı girin">
+      </div>
       <div class="form-field">
         <label for="password">Şifre</label>
-        <input type="password" id="password" name="password" required autocomplete="current-password">
+        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Şifrenizi girin">
       </div>
-      <button type="submit" class="btn btn--primary" style="width: 100%;" disabled>Faz 7'de aktif</button>
+      <p class="form-field__error" id="login-error" hidden></p>
+      <button type="submit" class="btn btn--primary" style="width: 100%; margin-top: var(--space-4);">Giriş Yap</button>
     </form>
   </div>
 </div>
+
+<style>
+  .auth-page {
+    background: #0b0f19 !important; /* Premium Dark Navy background override */
+  }
+  .auth-card {
+    background: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important;
+    padding: var(--space-6) !important;
+  }
+  .auth-logo-section {
+    text-align: center;
+    margin-bottom: var(--space-5);
+  }
+  .auth-logo {
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: var(--radius-md);
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-bottom: var(--space-3);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  }
+  .auth-logo-section h1 {
+    font-size: 1.35rem;
+    margin: 0;
+    color: #f8fafc;
+    font-weight: 700;
+  }
+  .auth-logo-section p {
+    margin: var(--space-1) 0 0;
+    font-size: 0.875rem;
+    color: #94a3b8;
+  }
+  .auth-card label {
+    color: #cbd5e1;
+    font-size: 0.875rem;
+  }
+  .auth-card input {
+    background: #0f172a !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+    min-height: 46px;
+  }
+  .auth-card input:focus {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
+  }
+</style>
+
+<script type="module" src="/js/login.js"></script>
